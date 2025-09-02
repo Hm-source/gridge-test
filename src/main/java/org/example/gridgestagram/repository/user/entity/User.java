@@ -47,6 +47,9 @@ public class User implements UserDetails {
     @Column(name = "password", nullable = false, length = 200)
     private String password;
 
+    @Column(name = "phone", nullable = false, length = 11)
+    private String phone;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "provider")
     private Provider provider;
@@ -81,13 +84,13 @@ public class User implements UserDetails {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public static User create(String username, String name, String password,
-        LocalDate birthdate, String profileImageUrl, Provider provider) {
+    public static User createBasicUser(String email, String name, String encodedPassword,
+        LocalDate birthdate, String profileImageUrl) {
         return User.builder()
-            .username(username)
+            .username(email)
             .name(name)
-            .password(password)
-            .provider(provider)
+            .password(encodedPassword)
+            .provider(null)
             .status(UserStatus.ACTIVE)
             .birthdate(birthdate)
             .profileImageUrl(profileImageUrl)
@@ -96,6 +99,28 @@ public class User implements UserDetails {
             .createdAt(LocalDateTime.now())
             .updatedAt(LocalDateTime.now())
             .build();
+    }
+
+    public static User createSocialUser(String email, String name, Provider provider,
+        String providerId, LocalDate birthdate, String profileImageUrl) {
+        return User.builder()
+            .username(email)
+            .name(name)
+            .provider(provider)
+            .providerId(providerId)
+            .status(UserStatus.ACTIVE)
+            .birthdate(birthdate)
+            .profileImageUrl(profileImageUrl)
+            .role(Role.USER)
+            .subscriptionStatus(SubscriptionStatus.INACTIVE)
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
+            .build();
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
     }
 
     @Override
@@ -121,5 +146,10 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return status == UserStatus.ACTIVE;
+    }
+
+    public void updateLastLoginAt() {
+        this.lastLoginAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 }
