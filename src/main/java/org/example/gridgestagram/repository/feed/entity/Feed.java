@@ -57,11 +57,11 @@ public class Feed {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
+    @Builder.Default
     @OneToMany(mappedBy = "feed", cascade = {CascadeType.PERSIST,
         CascadeType.REMOVE}, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
-
+    @Builder.Default
     @OneToMany(mappedBy = "feed", cascade = {CascadeType.PERSIST,
         CascadeType.REMOVE}, orphanRemoval = true)
     private List<Likes> likes = new ArrayList<>();
