@@ -13,6 +13,7 @@ import org.example.gridgestagram.repository.user.UserRepository;
 import org.example.gridgestagram.repository.user.entity.User;
 import org.example.gridgestagram.security.JwtProvider;
 import org.example.gridgestagram.service.domain.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,8 @@ public class AuthFacade {
     private final JwtProvider jwtProvider;
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
+    @Value("${jwt.token.expiration}")
+    private long accessTokenExpiration;
 
     @Transactional
     public SignUpResponse signUp(SignUpRequest request) {
@@ -56,7 +59,7 @@ public class AuthFacade {
             .loginAt(LocalDateTime.now())
             .build();
     }
-    
+
 
     public TokenRefreshResponse refreshToken(TokenRefreshRequest request) {
         String refreshToken = request.getRefreshToken();
@@ -77,6 +80,8 @@ public class AuthFacade {
         return TokenRefreshResponse.builder()
             .accessToken(newAccessToken)
             .tokenType("Bearer")
+            .issuedAt(LocalDateTime.now())
+            .expiresIn(accessTokenExpiration)
             .build();
     }
 }
