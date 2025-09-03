@@ -84,13 +84,14 @@ public class User implements UserDetails {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public static User createBasicUser(String email, String name, String encodedPassword,
-        LocalDate birthdate, String profileImageUrl) {
+    public static User createBasicUser(String username, String name, String encodedPassword,
+        String phone, LocalDate birthdate, String profileImageUrl) {
         return User.builder()
-            .username(email)
+            .username(username)
             .name(name)
             .password(encodedPassword)
             .provider(null)
+            .phone(phone)
             .status(UserStatus.ACTIVE)
             .birthdate(birthdate)
             .profileImageUrl(profileImageUrl)
