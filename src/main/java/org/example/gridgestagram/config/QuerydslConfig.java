@@ -1,4 +1,4 @@
-package org.example.gridgestagram.common.config;
+package org.example.gridgestagram.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
