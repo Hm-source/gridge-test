@@ -128,6 +128,59 @@ public class UserService implements UserDetailsService {
         return SignUpResponse.from(created);
     }
 
+    @Transactional(readOnly = true)
+    public void validateProviderIdNotExists(String providerId) {
+        if (userRepository.findByProviderId(providerId).isPresent()) {
+            throw new IllegalArgumentException("이미 가입된 소셜 사용자입니다: " + providerId);
+        }
+    }
+
+    private void validateTermsAgreements(TermsAgreementRequest termsRequest) {
+        // 필수 약관들이 모두 동의되었는지 확인
+        List<Terms> requiredTerms = termsService.getRequiredTerms();
+        Set<Long> requiredTermsIds = requiredTerms.stream()
+            .map(Terms::getId)
+            .collect(Collectors.toSet());
+        for (TermsAgreementRequest.TermsAgreementItem agreement : termsRequest.getAgreements()) {
+            termsService.getTermsById(agreement.getTermsId());
+        }
+        Map<Long, Boolean> agreementMap = termsRequest.getAgreements().stream()
+            .collect(Collectors.toMap(
+                TermsAgreementRequest.TermsAgreementItem::getTermsId,
+                TermsAgreementRequest.TermsAgreementItem::getAgreed
+            ));
+
+        List<String> unagreedRequiredTerms = new ArrayList<>();
+        for (Terms requiredTerm : requiredTerms) {
+            Boolean agreed = agreementMap.get(requiredTerm.getId());
+            if (agreed == null || !agreed) {
+                unagreedRequiredTerms.add(requiredTerm.getTitle());
+            }
+        }
+
+        if (!unagreedRequiredTerms.isEmpty()) {
+            throw new IllegalArgumentException(
+                "다음 필수 약관에 동의해야 합니다: " + String.join(", ", unagreedRequiredTerms)
+            );
+        }
+
+
+    }
+
+    private void processTermsAgreements(User user, TermsAgreementRequest termsRequest) {
+        for (TermsAgreementRequest.TermsAgreementItem agreement : termsRequest.getAgreements()) {
+            if (agreement.getAgreed()) {
+                Terms terms = termsService.getTermsById(agreement.getTermsId());
+                UserTerms userTerms = UserTerms.create(
+                    user,
+                    terms,
+                    true
+                );
+                userTermsRepository.save(userTerms);
+            }
+        }
+    }
+
     @Transactional
     public void delete(Long id) {
         userRepository.deleteById(id);
