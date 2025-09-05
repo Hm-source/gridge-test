@@ -7,9 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Integer>, IUserRepositoryCustom {
+public interface UserRepository extends JpaRepository<User, Long>, IUserRepositoryCustom {
 
-    Optional<User> findById(Integer id);
+    Optional<User> findById(Long id);
 
     Optional<User> findByUsername(String username);
 
@@ -17,5 +17,5 @@ public interface UserRepository extends JpaRepository<User, Integer>, IUserRepos
 
     User save(User entity);
 
-    void deleteById(Integer id);
+    void deleteById(Long id);
 }
