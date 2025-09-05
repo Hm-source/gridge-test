@@ -84,7 +84,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         refreshTokenService.store(user.getId(), refreshToken);
 
         String targetUrl = "http://localhost:3000/auth/callback" +
-            "?accessToken=" + accessToken;
+            "?accessToken=" + accessToken
+            + "&refreshToken=" + refreshToken;
 
         log.info("기존 사용자 로그인 완료 - 리다이렉트: {}", targetUrl);
         redirectStrategy.sendRedirect(request, response, targetUrl);
