@@ -1,4 +1,4 @@
-package org.example.gridgestagram.repository.Payment.entity;
+package org.example.gridgestagram.repository.payment.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -80,4 +80,5 @@ public class Payment {
             .build();
     }
 }
+
 
