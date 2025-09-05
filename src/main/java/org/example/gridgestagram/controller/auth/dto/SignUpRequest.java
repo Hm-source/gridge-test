@@ -1,5 +1,6 @@
 package org.example.gridgestagram.controller.auth.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -8,6 +9,7 @@ import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.example.gridgestagram.repository.user.entity.User;
 
 @Getter
 @Builder
@@ -33,4 +35,18 @@ public class SignUpRequest {
     @Past(message = "생년월일은 과거 날짜여야 합니다.")
     private LocalDate birthdate;
 
+    @Valid
+    @NotNull(message = "이용약관 동의 정보는 필수입니다.")
+    private TermsAgreementRequest termsAgreement;
+
+    public User toEntity(String encodedPassword, String profileImageUrl) {
+        return User.createBasicUser(
+            this.username,
+            this.name,
+            encodedPassword,
+            this.phone,
+            this.birthdate,
+            profileImageUrl
+        );
+    }
 }
