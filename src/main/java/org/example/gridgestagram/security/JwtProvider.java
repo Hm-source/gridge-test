@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
+import org.example.gridgestagram.repository.user.entity.vo.Role;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -25,6 +26,7 @@ public class JwtProvider implements InitializingBean {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String BEARER_PREFIX = "Bearer ";
     public static final String AUTHORITIES_KEY = "authorities";
+    public static final String USER_ID_KEY = "userId";
 
     @Value("${jwt.secret}")
     private String secret;
@@ -70,6 +72,34 @@ public class JwtProvider implements InitializingBean {
 
         return Jwts.builder()
             .subject(username)
+            .issuedAt(now)
+            .expiration(expiry)
+            .signWith(key)
+            .compact();
+    }
+
+    public String createAccessToken(Long userId, Role role) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + (accessTokenExpiration * 1000));
+
+        return Jwts.builder()
+            .subject(String.valueOf(userId))
+            .claim(USER_ID_KEY, userId)
+            .claim(AUTHORITIES_KEY, "ROLE_" + role.name())
+            .issuedAt(now)
+            .expiration(expiry)
+            .signWith(key)
+            .compact();
+    }
+
+    // User ID 기반 Refresh Token 생성
+    public String createRefreshToken(Long userId) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + (refreshTokenExpiration * 1000));
+
+        return Jwts.builder()
+            .subject(String.valueOf(userId))
+            .claim(USER_ID_KEY, userId)
             .issuedAt(now)
             .expiration(expiry)
             .signWith(key)
