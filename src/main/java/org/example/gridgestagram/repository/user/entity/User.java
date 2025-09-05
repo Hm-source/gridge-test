@@ -44,7 +44,7 @@ public class User implements UserDetails {
     @Column(name = "name", nullable = false, length = 20)
     private String name;
 
-    @Column(name = "password", nullable = false, length = 200)
+    @Column(name = "password", length = 200)
     private String password;
 
     @Column(name = "phone", nullable = false, length = 11)
@@ -102,11 +102,13 @@ public class User implements UserDetails {
             .build();
     }
 
-    public static User createSocialUser(String email, String name, Provider provider,
+    public static User createSocialUser(String username, String name, String phone,
+        Provider provider,
         String providerId, LocalDate birthdate, String profileImageUrl) {
         return User.builder()
-            .username(email)
+            .username(username)
             .name(name)
+            .phone(phone)
             .provider(provider)
             .providerId(providerId)
             .status(UserStatus.ACTIVE)
