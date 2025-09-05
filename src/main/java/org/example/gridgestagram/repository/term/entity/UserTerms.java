@@ -50,11 +50,35 @@ public class UserTerms {
     private Terms terms;
 
     public static UserTerms create(User user, Terms terms, Boolean isAgreed) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate today = LocalDate.now();
         return UserTerms.builder()
             .user(user)
             .terms(terms)
             .isAgreed(isAgreed)
-            .createdAt(LocalDateTime.now())
+            .createdAt(now)
+            .nextAgreedDate(calculateNextAgreedDate(today, isAgreed))
             .build();
+    }
+
+    private static LocalDate calculateNextAgreedDate(LocalDate today,
+        Boolean isAgreed) {
+        if (isAgreed == null || !isAgreed) {
+            return null;
+        }
+
+        return today.plusYears(1);
+    }
+
+    public void renewAgreement() {
+        this.isAgreed = true;
+        this.updatedAt = LocalDateTime.now();
+        this.nextAgreedDate = LocalDate.from(this.updatedAt.plusYears(1));
+    }
+
+    public void revokeAgreement() {
+        this.isAgreed = false;
+        this.updatedAt = LocalDateTime.now();
+        this.nextAgreedDate = null;
     }
 }
