@@ -6,6 +6,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import lombok.RequiredArgsConstructor;
 import org.example.gridgestagram.security.JwtAuthenticationFilter;
 import org.example.gridgestagram.security.JwtAuthenticationProvider;
+import org.example.gridgestagram.security.OAuth2AuthenticationSuccessHandler;
+import org.example.gridgestagram.service.domain.CustomOAuth2UserService;
 import org.example.gridgestagram.service.domain.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,14 +38,9 @@ public class SecurityConfig {
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
     private final PasswordEncoder passwordEncoder;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
-    //    @Bean
-//    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-//        AuthenticationManagerBuilder authenticationManagerBuilder =
-//            http.getSharedObject(AuthenticationManagerBuilder.class);
-//        authenticationManagerBuilder.authenticationProvider(jwtAuthenticationProvider);
-//        return authenticationManagerBuilder.build();
-//    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
@@ -76,11 +73,19 @@ public class SecurityConfig {
             .authenticationProvider(daoAuthenticationProvider())
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/", "/login/**", "/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/signup").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/error").permitAll()
+
                 .anyRequest().authenticated()
+            )
+            .oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(customOAuth2UserService)
+                )
+                .successHandler(oAuth2AuthenticationSuccessHandler)
             );
         http.anonymous(withDefaults());
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
