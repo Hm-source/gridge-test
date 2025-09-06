@@ -18,7 +18,6 @@ import org.example.gridgestagram.service.domain.TermsService;
 import org.example.gridgestagram.service.facade.AuthFacade;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -62,8 +61,8 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, String>> logout(Authentication authentication) {
-        authFacade.logout(authentication);
+    public ResponseEntity<Map<String, String>> logout() {
+        authFacade.logout();
         return ResponseEntity.ok(Map.of(
             "message", "로그아웃이 완료되었습니다.",
             "timestamp", LocalDateTime.now().toString()
