@@ -16,8 +16,10 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.example.gridgestagram.repository.files.entity.Files;
 import org.example.gridgestagram.repository.user.entity.User;
 
 @Entity
@@ -39,41 +41,44 @@ public class Feed {
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
-    @Builder.Default
+    @Default
     @Column(name = "is_visible", nullable = false)
     private Boolean isVisible = true;
 
-    @Builder.Default
+    @Default
     @Column(name = "like_count", nullable = false)
     private Integer likeCount = 0;
 
-    @Builder.Default
+    @Default
     @Column(name = "comment_count", nullable = false)
     private Integer commentCount = 0;
 
-    @Builder.Default
+    @Default
     @Column(name = "report_count", nullable = false)
     private Integer reportCount = 0;
 
-    @Builder.Default
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Builder.Default
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @Builder.Default
     @OneToMany(mappedBy = "feed", cascade = {CascadeType.PERSIST,
         CascadeType.REMOVE}, orphanRemoval = true)
+    private List<Files> files = new ArrayList<>();
+
+    @Default
+    @OneToMany(mappedBy = "feed", cascade = {CascadeType.PERSIST,
+        CascadeType.REMOVE}, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
-    @Builder.Default
+    @Default
     @OneToMany(mappedBy = "feed", cascade = {CascadeType.PERSIST,
         CascadeType.REMOVE}, orphanRemoval = true)
     private List<Likes> likes = new ArrayList<>();
 
-    @Builder.Default
+    @Default
     @OneToMany(mappedBy = "feed", cascade = {CascadeType.PERSIST,
         CascadeType.REMOVE}, orphanRemoval = true)
     private List<FeedReport> reports = new ArrayList<>();
