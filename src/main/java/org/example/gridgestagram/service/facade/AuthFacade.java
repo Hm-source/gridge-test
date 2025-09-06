@@ -2,6 +2,7 @@ package org.example.gridgestagram.service.facade;
 
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.gridgestagram.controller.auth.dto.LoginRequest;
 import org.example.gridgestagram.controller.auth.dto.LoginResponse;
 import org.example.gridgestagram.controller.auth.dto.SignUpRequest;
@@ -11,6 +12,8 @@ import org.example.gridgestagram.controller.auth.dto.TokenRefreshResponse;
 import org.example.gridgestagram.controller.user.dto.OAuth2SignUpRequest;
 import org.example.gridgestagram.controller.user.dto.OAuth2SignUpResponse;
 import org.example.gridgestagram.controller.user.dto.UserResponse;
+import org.example.gridgestagram.exceptions.CustomException;
+import org.example.gridgestagram.exceptions.ErrorCode;
 import org.example.gridgestagram.repository.user.UserRepository;
 import org.example.gridgestagram.repository.user.entity.User;
 import org.example.gridgestagram.security.JwtProvider;
@@ -20,10 +23,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthFacade {
@@ -71,7 +76,7 @@ public class AuthFacade {
         String refreshToken = request.getRefreshToken();
 
         if (!jwtProvider.validateToken(refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
+            throw new CustomException(ErrorCode.TOKEN_EXPIRED);
         }
 
         String username = jwtProvider.getUsernameFromToken(refreshToken);
@@ -92,7 +97,15 @@ public class AuthFacade {
     }
 
     @Transactional
-    public void logout(Authentication authentication) {
+    public void logout() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()
+            || "anonymousUser".equals(authentication.getPrincipal())) {
+            log.warn("인증되지 않은 사용자의 로그아웃 시도");
+            return;
+        }
+
         String username;
 
         if (authentication.getPrincipal() instanceof User user) {
@@ -100,12 +113,16 @@ public class AuthFacade {
         } else if (authentication.getPrincipal() instanceof UserDetails userDetails) {
             username = userDetails.getUsername();
         } else {
-            throw new IllegalArgumentException("지원하지 않는 인증 타입입니다.");
+            log.warn("로그아웃 실패 - 알 수 없는 Principal 타입: {}",
+                authentication.getPrincipal().getClass());
+            return;
         }
-        User user = userService.findByUsername(username);
 
+        User user = userService.findByUsername(username);
         refreshTokenService.deleteByUserId(user.getId());
 
+        // 선택사항: SecurityContext 클리어 (보통 Spring Security가 자동으로 처리)
+        SecurityContextHolder.clearContext();
     }
 
     @Transactional
@@ -120,7 +137,7 @@ public class AuthFacade {
         String accessToken = jwtProvider.generateAccessToken(auth);
         String refreshToken = jwtProvider.generateRefreshToken(user.getUsername());
 
-        // RefreshToken 저장 (Redis 연동시 사용)
+        // RefreshToken 저장
         refreshTokenService.store(user.getId(), refreshToken);
 
         return OAuth2SignUpResponse.builder()
@@ -133,24 +150,4 @@ public class AuthFacade {
             .build();
     }
 
-    @Transactional
-    public LoginResponse loginOAuth2(String providerId) {
-        User user = userService.findByProviderId(providerId);
-
-        // 마지막 로그인 시간 업데이트
-        user.updateLastLoginAt();
-        userRepository.save(user);
-
-        // 토큰 생성
-        Authentication auth = new UsernamePasswordAuthenticationToken(
-            user, null, user.getAuthorities()
-        );
-        String accessToken = jwtProvider.generateAccessToken(auth);
-        String refreshToken = jwtProvider.generateRefreshToken(user.getUsername());
-
-        // RefreshToken 저장 (Redis 연동시 사용)
-        refreshTokenService.store(user.getId(), refreshToken);
-
-        return LoginResponse.from(accessToken, refreshToken, user);
-    }
 }

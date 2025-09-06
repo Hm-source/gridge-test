@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.gridgestagram.controller.auth.dto.TermsResponse;
+import org.example.gridgestagram.exceptions.CustomException;
+import org.example.gridgestagram.exceptions.ErrorCode;
 import org.example.gridgestagram.repository.term.TermsRepository;
 import org.example.gridgestagram.repository.term.entity.Terms;
 import org.springframework.stereotype.Service;
@@ -33,7 +35,7 @@ public class TermsService {
     @Transactional(readOnly = true)
     public Terms getTermsById(Long id) {
         return termsRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 약관입니다. ID: " + id));
+            .orElseThrow(() -> new CustomException(ErrorCode.TERMS_NOT_FOUND));
     }
 
 }

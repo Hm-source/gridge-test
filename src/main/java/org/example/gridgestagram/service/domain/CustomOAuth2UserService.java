@@ -36,10 +36,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
 
         String nickname = (String) profile.get("nickname");
-        String email = (String) kakaoAccount.get("email");
         String profileImageUrl = (String) profile.get("profile_image_url");
 
-        log.info("nickname: {}, email: {}, profileImageUrl: {}", nickname, email, profileImageUrl);
+        log.info("nickname: {}, profileImageUrl: {}", nickname, profileImageUrl);
 
         // 기존 사용자 확인
         Optional<User> existingUser = userRepository.findByProviderId(providerId);

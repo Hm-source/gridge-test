@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.example.gridgestagram.controller.auth.dto.SignUpRequest;
@@ -15,6 +14,8 @@ import org.example.gridgestagram.controller.auth.dto.TermsAgreementRequest;
 import org.example.gridgestagram.controller.user.dto.OAuth2SignUpRequest;
 import org.example.gridgestagram.controller.user.dto.OAuth2UserInfo;
 import org.example.gridgestagram.controller.user.dto.UserResponse;
+import org.example.gridgestagram.exceptions.CustomException;
+import org.example.gridgestagram.exceptions.ErrorCode;
 import org.example.gridgestagram.repository.term.UserTermsRepository;
 import org.example.gridgestagram.repository.term.entity.Terms;
 import org.example.gridgestagram.repository.term.entity.UserTerms;
@@ -40,20 +41,20 @@ public class UserService implements UserDetailsService {
     @Transactional(readOnly = true)
     public User findById(Long id) {
         return userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("유저가 데이터베이스 내 존재하지 않습니다. 유저 id : " + id));
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("유저가 데이터베이스 내 존재하지 않습니다. 유저 id : " + username));
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
-    
+
     @Transactional(readOnly = true)
     public User findByProviderId(String id) {
         return userRepository.findByProviderId(id)
-            .orElseThrow(() -> new RuntimeException("유저가 데이터베이스 내 존재하지 않습니다. 유저 id : " + id));
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
@@ -102,16 +103,11 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public SignUpResponse saveOAuth2User(OAuth2SignUpRequest request) {
-        // 카카오 정보 디코딩
         OAuth2UserInfo userInfo = decodeOAuth2Info(request.getKakaoInfo());
-
         // 중복 확인
         validateProviderIdNotExists(userInfo.getProviderId());
-
         // 약관 동의 검증
         validateTermsAgreements(request.getTermsAgreement());
-
-        // OAuth2 사용자 생성
         User user = User.createSocialUser(
             userInfo.getName(),
             userInfo.getName(),
@@ -131,16 +127,13 @@ public class UserService implements UserDetailsService {
     @Transactional(readOnly = true)
     public void validateProviderIdNotExists(String providerId) {
         if (userRepository.findByProviderId(providerId).isPresent()) {
-            throw new IllegalArgumentException("이미 가입된 소셜 사용자입니다: " + providerId);
+            throw new CustomException(ErrorCode.DUPLICATE_USERNAME);
         }
     }
 
     private void validateTermsAgreements(TermsAgreementRequest termsRequest) {
         // 필수 약관들이 모두 동의되었는지 확인
         List<Terms> requiredTerms = termsService.getRequiredTerms();
-        Set<Long> requiredTermsIds = requiredTerms.stream()
-            .map(Terms::getId)
-            .collect(Collectors.toSet());
         for (TermsAgreementRequest.TermsAgreementItem agreement : termsRequest.getAgreements()) {
             termsService.getTermsById(agreement.getTermsId());
         }
@@ -159,9 +152,7 @@ public class UserService implements UserDetailsService {
         }
 
         if (!unagreedRequiredTerms.isEmpty()) {
-            throw new IllegalArgumentException(
-                "다음 필수 약관에 동의해야 합니다: " + String.join(", ", unagreedRequiredTerms)
-            );
+            throw new CustomException(ErrorCode.TERMS_AGREEMENT_REQUIRED);
         }
 
 
@@ -189,7 +180,7 @@ public class UserService implements UserDetailsService {
     @Transactional(readOnly = true)
     public void validateUsernameNotExists(String username) {
         if (userRepository.findByUsername(username).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 username 입니다: " + username);
+            throw new CustomException(ErrorCode.DUPLICATE_USERNAME);
         }
     }
 
@@ -202,7 +193,7 @@ public class UserService implements UserDetailsService {
             String[] infoParts = decodedInfo.split("\\|");
 
             if (infoParts.length != 4) {
-                throw new IllegalArgumentException("잘못된 OAuth2 사용자 정보 형식입니다.");
+                throw new CustomException(ErrorCode.OAUTH2_FAILED);
             }
 
             return OAuth2UserInfo.builder()
@@ -212,7 +203,7 @@ public class UserService implements UserDetailsService {
                 .build();
 
         } catch (Exception e) {
-            throw new IllegalArgumentException("OAuth2 사용자 정보 디코딩에 실패했습니다.");
+            throw new CustomException(ErrorCode.OAUTH2_FAILED);
         }
     }
 }
