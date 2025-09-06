@@ -26,8 +26,24 @@ public enum ErrorCode {
     VALIDATION_FAILED("ERROR_VALIDATION_001", "입력값을 확인해주세요.", 400),
 
     // 시스템
-    INTERNAL_ERROR("ERROR_SYSTEM_001", "서버 오류가 발생했습니다.", 500);
+    INTERNAL_ERROR("ERROR_SYSTEM_001", "서버 오류가 발생했습니다.", 500),
 
+    // 파일 관련
+    TOO_MANY_FILES("FILE_001", "파일은 최대 10개까지 업로드할 수 있습니다.", 400),
+    INVALID_FILE_ORDER("FILE_002", "파일 순서가 유효하지 않습니다.", 400),
+    DUPLICATE_FILE_ORDER("FILE_003", "중복된 파일 순서입니다.", 400),
+
+    // 게시물 관련
+    FEED_LIST_FETCH_FAILED("FEED_001", "피드 목록을 불러오는데 실패하였습니다.", 500),
+    INVALID_FEED_ID("FEED_VALIDATION_001", "피드 ID가 유효하지 않습니다.", 400),
+    FEED_CREATE_FAILED("FEED_002", "피드 생성을 실패하였습니다.", 500),
+    FEED_UPDATE_FAILED("FEED_003", "피드 업데이트를 실패하였습니다.", 500),
+    FEED_DELETE_FAILED("FEED_004", "피드 삭제를 실패하였습니다.", 500),
+    FEED_FETCH_FAILED("FEED_005", "게시물 조회에 실패했습니다.", 500),
+    FEED_NOT_FOUND("FEED_006", "피드를 찾을 수 없습니다.", 500),
+
+    // 공통
+    INVALID_REQUEST("COMMON_001", "유효하지 않은 요청입니다.", 400);
     private final String code;
     private final String message;
     private final int status;
