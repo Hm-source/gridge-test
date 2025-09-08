@@ -33,6 +33,8 @@ public enum ErrorCode {
     TOO_MANY_FILES("FILE_001", "파일은 최대 10개까지 업로드할 수 있습니다.", 400),
     INVALID_FILE_ORDER("FILE_002", "파일 순서가 유효하지 않습니다.", 400),
     DUPLICATE_FILE_ORDER("FILE_003", "중복된 파일 순서입니다.", 400),
+    FILE_SAVE_FAILED("FILE_004", "파일 저장에 실패하였습니다.", 500),
+    INVALID_FILE("FILE_005", "파일이 유효하지 않습니다..", 400),
 
     // 게시물 관련
     FEED_LIST_FETCH_FAILED("FEED_001", "피드 목록을 불러오는데 실패하였습니다.", 500),
