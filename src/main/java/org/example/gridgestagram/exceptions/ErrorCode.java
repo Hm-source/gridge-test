@@ -45,6 +45,13 @@ public enum ErrorCode {
     FEED_FETCH_FAILED("FEED_005", "게시물 조회에 실패했습니다.", 500),
     FEED_NOT_FOUND("FEED_006", "피드를 찾을 수 없습니다.", 500),
 
+    // 댓글 관련
+    COMMENT_NOT_FOUND("COMMENT_001", "댓글을 찾을 수 없습니다.", 404),
+    COMMENT_ACCESS_DENIED("COMMENT_002", "댓글에 대한 권한이 없습니다.", 403),
+    COMMENT_CREATE_FAILED("COMMENT_003", "댓글 생성에 실패했습니다.", 500),
+    COMMENT_UPDATE_FAILED("COMMENT_004", "댓글 수정에 실패했습니다.", 500),
+    COMMENT_DELETE_FAILED("COMMENT_005", "댓글 삭제에 실패했습니다.", 500),
+    COMMENT_LIST_FETCH_FAILED("COMMENT_006", "댓글 목록 조회에 실패했습니다.", 500),
     // 공통
     INVALID_REQUEST("COMMON_001", "유효하지 않은 요청입니다.", 400);
     private final String code;

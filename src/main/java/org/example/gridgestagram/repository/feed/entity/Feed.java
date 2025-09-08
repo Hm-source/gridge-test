@@ -89,6 +89,12 @@ public class Feed {
             .build();
     }
 
+    public void decrementCommentCount() {
+        if (this.commentCount > 0) {
+            this.commentCount--;
+        }
+    }
+
     public void update(String content) {
         this.content = content;
         this.updatedAt = LocalDateTime.now();
