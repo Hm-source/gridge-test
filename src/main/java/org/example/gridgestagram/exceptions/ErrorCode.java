@@ -6,10 +6,11 @@ import lombok.Getter;
 public enum ErrorCode {
 
     // 인증/권한
+    UNAUTHORIZED("AUTH_001", "인증이 필요합니다.", 401),
+    INVALID_AUTHENTICATION("AUTH_002", "유효하지 않은 인증 정보입니다.", 401),
     INVALID_CREDENTIALS("ERROR_AUTH_001", "로그인 정보가 올바르지 않습니다.", 401),
     TOKEN_EXPIRED("ERROR_AUTH_002", "로그인이 만료되었습니다.", 401),
     ACCESS_DENIED("ERROR_AUTH_003", "접근 권한이 없습니다.", 403),
-
     // 사용자
     USER_NOT_FOUND("ERROR_USER_001", "사용자를 찾을 수 없습니다.", 404),
     DUPLICATE_USERNAME("ERROR_USER_002", "이미 사용 중인 아이디입니다.", 409),
