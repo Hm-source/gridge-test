@@ -123,4 +123,9 @@ public class Feed {
             hide();
         }
     }
+
+    public void addFile(Files file) {
+        this.files.add(file);
+    }
+
 }
