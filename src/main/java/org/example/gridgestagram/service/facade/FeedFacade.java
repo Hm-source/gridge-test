@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.gridgestagram.controller.feed.dto.FeedCreateRequest;
 import org.example.gridgestagram.controller.feed.dto.FeedDetailResponse;
 import org.example.gridgestagram.controller.feed.dto.FeedResponse;
+import org.example.gridgestagram.controller.feed.dto.FeedUpdateRequest;
 import org.example.gridgestagram.exceptions.CustomException;
 import org.example.gridgestagram.exceptions.ErrorCode;
 import org.example.gridgestagram.repository.feed.entity.Feed;
@@ -29,7 +30,7 @@ public class FeedFacade {
         return feedService.getFeeds(pageable);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public FeedResponse createFeed(FeedCreateRequest request) {
         if (request == null) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
@@ -46,5 +47,17 @@ public class FeedFacade {
         return FeedDetailResponse.from(feedService.getFeed(feedId));
     }
 
+    @Transactional
+    public FeedResponse updateFeed(Long feedId, FeedUpdateRequest request) {
+        User user = authenticationService.getCurrentUser();
+        Feed feed = feedService.updateFeed(feedId, user.getId(), request);
+        return FeedResponse.from(feed);
+    }
+
+    @Transactional
+    public void deleteFeed(Long feedId) {
+        User user = authenticationService.getCurrentUser();
+        feedService.deleteFeed(feedId, user.getId());
+    }
 
 }

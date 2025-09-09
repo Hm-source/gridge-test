@@ -9,8 +9,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.gridgestagram.controller.feed.dto.CommentResponse;
 import org.example.gridgestagram.controller.feed.dto.FeedCreateRequest;
 import org.example.gridgestagram.controller.feed.dto.FeedResponse;
+import org.example.gridgestagram.controller.feed.dto.FeedUpdateRequest;
 import org.example.gridgestagram.exceptions.CustomException;
 import org.example.gridgestagram.exceptions.ErrorCode;
+import org.example.gridgestagram.repository.feed.CommentRepository;
 import org.example.gridgestagram.repository.feed.FeedRepository;
 import org.example.gridgestagram.repository.feed.entity.Comment;
 import org.example.gridgestagram.repository.feed.entity.Feed;
@@ -29,7 +31,7 @@ public class FeedService {
 
     private final FeedRepository feedRepository;
     private final FilesService filesService;
-    private final CommentService commentService;
+    private final CommentRepository commentRepository;
 
     @Transactional(readOnly = true)
     public Page<FeedResponse> getFeeds(Pageable pageable) {
@@ -43,9 +45,12 @@ public class FeedService {
 
             Map<Long, List<Comment>> commentsByFeedId = Collections.emptyMap();
             try {
-                List<Comment> allComments = commentService.findRecentTop3Grouped(feedIds);
-                commentsByFeedId = allComments.stream()
-                    .collect(Collectors.groupingBy(comment -> comment.getFeed().getId()));
+                if (!feedIds.isEmpty()) {
+                    List<Comment> allComments = commentRepository.findTop3CommentsByFeedIds(
+                        feedIds);
+                    commentsByFeedId = allComments.stream()
+                        .collect(Collectors.groupingBy(comment -> comment.getFeed().getId()));
+                }
             } catch (Exception e) {
                 log.warn("댓글 조회 실패로 댓글 없이 게시물 목록을 반환합니다: {}", e.getMessage());
             }
@@ -67,9 +72,6 @@ public class FeedService {
 
     @Transactional(readOnly = true)
     public Feed getFeed(Long feedId) {
-        if (feedId == null || feedId <= 0) {
-            throw new CustomException(ErrorCode.INVALID_FEED_ID);
-        }
         try {
             return feedRepository.findByIdAndIsVisibleTrue(feedId)
                 .orElseThrow(() -> new CustomException(ErrorCode.FEED_NOT_FOUND));
@@ -93,6 +95,7 @@ public class FeedService {
         }
     }
 
+    @Transactional
     public void deleteFeed(Long feedId, Long userId) {
         try {
             Feed feed = feedRepository.findByIdAndUserId(feedId, userId).orElseThrow(
@@ -115,6 +118,7 @@ public class FeedService {
         }
     }
 
+    @Transactional(readOnly = true)
     public Feed findById(Long feedId) {
         if (feedId == null || feedId <= 0) {
             throw new CustomException(ErrorCode.INVALID_FEED_ID);
@@ -126,6 +130,22 @@ public class FeedService {
             throw e;
         } catch (Exception e) {
             throw new CustomException(ErrorCode.FEED_FETCH_FAILED);
+        }
+    }
+
+    @Transactional
+    public Feed updateFeed(Long feedId, Long userId, FeedUpdateRequest request) {
+        try {
+            Feed feed = feedRepository.findByIdAndUserId(feedId, userId).orElseThrow(
+                () -> new CustomException(ErrorCode.FEED_NOT_FOUND)
+            );
+            feed.update(request.getContent());
+            return feed;
+
+        } catch (CustomException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.FEED_UPDATE_FAILED);
         }
     }
 }
