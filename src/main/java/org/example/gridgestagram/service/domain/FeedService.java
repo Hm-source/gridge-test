@@ -1,13 +1,18 @@
 package org.example.gridgestagram.service.domain;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.gridgestagram.controller.feed.dto.CommentResponse;
 import org.example.gridgestagram.controller.feed.dto.FeedCreateRequest;
 import org.example.gridgestagram.controller.feed.dto.FeedResponse;
 import org.example.gridgestagram.exceptions.CustomException;
 import org.example.gridgestagram.exceptions.ErrorCode;
 import org.example.gridgestagram.repository.feed.FeedRepository;
+import org.example.gridgestagram.repository.feed.entity.Comment;
 import org.example.gridgestagram.repository.feed.entity.Feed;
 import org.example.gridgestagram.repository.files.entity.Files;
 import org.example.gridgestagram.repository.user.entity.User;
@@ -24,6 +29,7 @@ public class FeedService {
 
     private final FeedRepository feedRepository;
     private final FilesService filesService;
+    private final CommentService commentService;
 
     @Transactional(readOnly = true)
     public Page<FeedResponse> getFeeds(Pageable pageable) {
@@ -31,22 +37,42 @@ public class FeedService {
 
         try {
             Page<Feed> feedPage = feedRepository.findByIsVisibleTrue(pageable);
-            return feedPage.map(FeedResponse::from);
+            List<Long> feedIds = feedPage.getContent().stream()
+                .map(Feed::getId)
+                .toList();
+
+            Map<Long, List<Comment>> commentsByFeedId = Collections.emptyMap();
+            try {
+                List<Comment> allComments = commentService.findRecentTop3Grouped(feedIds);
+                commentsByFeedId = allComments.stream()
+                    .collect(Collectors.groupingBy(comment -> comment.getFeed().getId()));
+            } catch (Exception e) {
+                log.warn("댓글 조회 실패로 댓글 없이 게시물 목록을 반환합니다: {}", e.getMessage());
+            }
+
+            final Map<Long, List<Comment>> finalCommentsByFeedId = commentsByFeedId;
+            return feedPage.map(feed -> {
+                List<CommentResponse> recentComments = finalCommentsByFeedId
+                    .getOrDefault(feed.getId(), Collections.emptyList())
+                    .stream()
+                    .map(CommentResponse::from)
+                    .toList();
+                return FeedResponse.fromWithComments(feed, recentComments);
+            });
         } catch (Exception e) {
             log.error("게시물 목록 조회 실패: {}", e.getMessage());
             throw new CustomException(ErrorCode.FEED_LIST_FETCH_FAILED);
         }
     }
 
-    public FeedResponse getFeed(Long feedId) {
+    @Transactional(readOnly = true)
+    public Feed getFeed(Long feedId) {
         if (feedId == null || feedId <= 0) {
             throw new CustomException(ErrorCode.INVALID_FEED_ID);
         }
         try {
-            Feed feed = feedRepository.findByIdAndIsVisibleTrue(feedId)
+            return feedRepository.findByIdAndIsVisibleTrue(feedId)
                 .orElseThrow(() -> new CustomException(ErrorCode.FEED_NOT_FOUND));
-
-            return FeedResponse.from(feed);
         } catch (CustomException e) {
             throw e;
         } catch (Exception e) {
@@ -86,6 +112,20 @@ public class FeedService {
             throw e;
         } catch (Exception e) {
             throw new CustomException(ErrorCode.FEED_DELETE_FAILED);
+        }
+    }
+
+    public Feed findById(Long feedId) {
+        if (feedId == null || feedId <= 0) {
+            throw new CustomException(ErrorCode.INVALID_FEED_ID);
+        }
+        try {
+            return feedRepository.findByIdAndIsVisibleTrue(feedId)
+                .orElseThrow(() -> new CustomException(ErrorCode.FEED_NOT_FOUND));
+        } catch (CustomException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.FEED_FETCH_FAILED);
         }
     }
 }

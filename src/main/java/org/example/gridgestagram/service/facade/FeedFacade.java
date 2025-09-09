@@ -2,6 +2,7 @@ package org.example.gridgestagram.service.facade;
 
 import lombok.RequiredArgsConstructor;
 import org.example.gridgestagram.controller.feed.dto.FeedCreateRequest;
+import org.example.gridgestagram.controller.feed.dto.FeedDetailResponse;
 import org.example.gridgestagram.controller.feed.dto.FeedResponse;
 import org.example.gridgestagram.exceptions.CustomException;
 import org.example.gridgestagram.exceptions.ErrorCode;
@@ -28,22 +29,21 @@ public class FeedFacade {
         return feedService.getFeeds(pageable);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public FeedResponse createFeed(FeedCreateRequest request) {
         if (request == null) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
+        User user = authenticationService.getCurrentUser();
+        Feed savedFeed = feedService.createFeed(user, request);
+        filesService.saveFiles(savedFeed, request.getFiles());
+        return FeedResponse.from(savedFeed);
 
-        try {
-            User user = authenticationService.getCurrentUser();
-            Feed savedFeed = feedService.createFeed(user, request);
-            filesService.saveFiles(savedFeed, request.getFiles());
-            return FeedResponse.from(savedFeed);
-        } catch (CustomException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new CustomException(ErrorCode.FEED_CREATE_FAILED);
-        }
+    }
+
+    @Transactional(readOnly = true)
+    public FeedDetailResponse getFeed(Long feedId) {
+        return FeedDetailResponse.from(feedService.getFeed(feedId));
     }
 
 

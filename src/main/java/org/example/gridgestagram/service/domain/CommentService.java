@@ -42,6 +42,7 @@ public class CommentService {
         }
     }
 
+    @Transactional(readOnly = true)
     public Page<CommentResponse> getComments(Long feedId, Pageable pageable) {
         try {
             pageable = PaginationUtils.validateAndAdjust(pageable);
@@ -56,13 +57,13 @@ public class CommentService {
         }
     }
 
-    public List<CommentResponse> getRecentComments(Long feedId, int limit) {
+    @Transactional(readOnly = true)
+    public List<Comment> findRecentTop3Grouped(List<Long> feedIds) {
+        if (feedIds == null || feedIds.isEmpty()) {
+            return Collections.emptyList();
+        }
         try {
-            List<Comment> comments = commentRepository.findTopCommentsByFeedId(feedId, limit);
-
-            return comments.stream()
-                .map(CommentResponse::from)
-                .toList();
+            return commentRepository.findTop3CommentsByFeedIds(feedIds);
 
         } catch (Exception e) {
             return Collections.emptyList();

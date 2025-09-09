@@ -1,7 +1,6 @@
 package org.example.gridgestagram.controller.feed.dto;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import lombok.Builder;
@@ -10,8 +9,8 @@ import org.example.gridgestagram.controller.user.dto.UserSimpleResponse;
 import org.example.gridgestagram.repository.feed.entity.Feed;
 
 @Getter
-@Builder(toBuilder = true)
-public class FeedResponse {
+@Builder
+public class FeedDetailResponse {
 
     private Long id;
     private String content;
@@ -20,17 +19,16 @@ public class FeedResponse {
     private Integer commentCount;
     private UserSimpleResponse user;
     private List<FileResponse> files;
-    private List<CommentResponse> recentComments;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static FeedResponse from(Feed feed) {
+    public static FeedDetailResponse from(Feed feed) {
         List<FileResponse> files = feed.getFiles().stream()
             .map(FileResponse::from)
             .sorted(Comparator.comparing(FileResponse::getOrder))
             .toList();
 
-        return FeedResponse.builder()
+        return FeedDetailResponse.builder()
             .id(feed.getId())
             .content(feed.getContent())
             .isVisible(feed.getIsVisible())
@@ -43,10 +41,4 @@ public class FeedResponse {
             .build();
     }
 
-    public static FeedResponse fromWithComments(Feed feed, List<CommentResponse> recentComments) {
-        FeedResponse response = from(feed);
-        return response.toBuilder()
-            .recentComments(recentComments != null ? recentComments : Collections.emptyList())
-            .build();
-    }
 }

@@ -11,17 +11,20 @@ import org.springframework.data.repository.query.Param;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    @Query(value = "SELECT c.* FROM comment c " +
-        "JOIN users u ON c.user_id = u.id " +
-        "WHERE c.feed_id = :feedId " +
-        "ORDER BY c.created_at DESC " +
-        "LIMIT 3",
-        nativeQuery = true)
-    List<Comment> findTopCommentsByFeedId(@Param("feedId") Long feedId, int limit);
-
     @EntityGraph(attributePaths = {"user"})
     Page<Comment> findByFeedIdOrderByCreatedAtDesc(Long feedId, Pageable pageable);
 
     long countByFeedId(Long feedId);
-
+    
+    @Query("SELECT c FROM Comment c " +
+        "JOIN FETCH c.user " +
+        "WHERE c.feed.id IN :feedIds " +
+        "AND c.id IN (" +
+        "  SELECT c2.id FROM Comment c2 " +
+        "  WHERE c2.feed.id = c.feed.id " +
+        "  ORDER BY c2.createdAt DESC " +
+        "  LIMIT 3" +
+        ") " +
+        "ORDER BY c.feed.id, c.createdAt DESC")
+    List<Comment> findTop3CommentsByFeedIds(@Param("feedIds") List<Long> feedIds);
 }

@@ -1,6 +1,5 @@
 package org.example.gridgestagram.service.facade;
 
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.example.gridgestagram.controller.feed.dto.CommentCreateRequest;
 import org.example.gridgestagram.controller.feed.dto.CommentResponse;
@@ -33,11 +32,6 @@ public class CommentFacade {
         feedService.findById(feedId);
         pageable = PaginationUtils.validateAndAdjust(pageable);
         return commentService.getComments(feedId, pageable);
-    }
-
-    @Transactional(readOnly = true)
-    public List<CommentResponse> getRecentComments(Long feedId, int limit) {
-        return commentService.getRecentComments(feedId, limit);
     }
 
     @Transactional
