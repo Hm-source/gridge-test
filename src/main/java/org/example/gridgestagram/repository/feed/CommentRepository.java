@@ -15,16 +15,17 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     Page<Comment> findByFeedIdOrderByCreatedAtDesc(Long feedId, Pageable pageable);
 
     long countByFeedId(Long feedId);
-    
-    @Query("SELECT c FROM Comment c " +
-        "JOIN FETCH c.user " +
-        "WHERE c.feed.id IN :feedIds " +
-        "AND c.id IN (" +
-        "  SELECT c2.id FROM Comment c2 " +
-        "  WHERE c2.feed.id = c.feed.id " +
-        "  ORDER BY c2.createdAt DESC " +
-        "  LIMIT 3" +
-        ") " +
-        "ORDER BY c.feed.id, c.createdAt DESC")
+
+    @Query(value = """
+        SELECT c.* FROM comment c
+        INNER JOIN users u ON c.user_id = u.id
+        INNER JOIN (
+            SELECT c2.feed_id, c2.id,
+                   ROW_NUMBER() OVER (PARTITION BY c2.feed_id ORDER BY c2.created_at DESC) as rn
+            FROM comment c2
+            WHERE c2.feed_id IN :feedIds
+        ) ranked ON c.id = ranked.id AND ranked.rn <= 3
+        ORDER BY c.feed_id, c.created_at DESC
+        """, nativeQuery = true)
     List<Comment> findTop3CommentsByFeedIds(@Param("feedIds") List<Long> feedIds);
 }

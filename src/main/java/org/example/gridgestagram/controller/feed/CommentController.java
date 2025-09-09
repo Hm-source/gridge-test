@@ -30,7 +30,6 @@ public class CommentController {
     public ResponseEntity<CommentResponse> createComment(
         @PathVariable Long feedId,
         @Valid @RequestBody CommentCreateRequest request) {
-
         CommentResponse response = commentFacade.createComment(feedId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
