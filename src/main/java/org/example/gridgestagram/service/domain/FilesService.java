@@ -18,12 +18,15 @@ public class FilesService {
 
     public void saveFiles(Feed feed, List<FileUploadInfo> fileInfos) {
         try {
-            feed.addFiles(fileInfos);
-            for (Files file : feed.getFiles()) {
-                if (file.getId() == null) { // 새로 추가된 파일만
-                    filesRepository.save(file);
-                }
-            }
+            List<Files> filesToSave = fileInfos.stream()
+                .map(fileInfo -> {
+                    Files file = Files.create(feed, fileInfo.getUrl(), fileInfo.getOrder());
+                    feed.addFile(file);
+                    return file;
+                })
+                .toList();
+
+            filesRepository.saveAll(filesToSave);
 
         } catch (Exception e) {
             throw new CustomException(ErrorCode.FILE_SAVE_FAILED);
