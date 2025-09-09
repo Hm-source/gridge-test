@@ -1,10 +1,12 @@
 package org.example.gridgestagram.service.facade;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.example.gridgestagram.controller.feed.dto.FeedCreateRequest;
 import org.example.gridgestagram.controller.feed.dto.FeedDetailResponse;
 import org.example.gridgestagram.controller.feed.dto.FeedResponse;
 import org.example.gridgestagram.controller.feed.dto.FeedUpdateRequest;
+import org.example.gridgestagram.controller.feed.dto.FileUploadInfo;
 import org.example.gridgestagram.exceptions.CustomException;
 import org.example.gridgestagram.exceptions.ErrorCode;
 import org.example.gridgestagram.repository.feed.entity.Feed;
@@ -24,6 +26,7 @@ public class FeedFacade {
     private final FeedService feedService;
     private final FilesService filesService;
     private final AuthenticationService authenticationService;
+    private final S3Facade s3Facade;
 
     @Transactional
     public Page<FeedResponse> getFeeds(Pageable pageable) {
@@ -36,6 +39,9 @@ public class FeedFacade {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
         User user = authenticationService.getCurrentUser();
+        if (request.getFiles() != null && !request.getFiles().isEmpty()) {
+            validateUploadedFiles(request.getFiles());
+        }
         Feed savedFeed = feedService.createFeed(user, request);
         filesService.saveFiles(savedFeed, request.getFiles());
         return FeedResponse.from(savedFeed);
@@ -60,4 +66,12 @@ public class FeedFacade {
         feedService.deleteFeed(feedId, user.getId());
     }
 
+    private void validateUploadedFiles(List<FileUploadInfo> files) {
+        for (FileUploadInfo file : files) {
+            if (!s3Facade.verifyFileExists(file.getUrl())) {
+                throw new CustomException(ErrorCode.FILE_NOT_UPLOADED_TO_S3,
+                    "파일이 S3에 업로드되지 않았습니다: " + file.getUrl());
+            }
+        }
+    }
 }

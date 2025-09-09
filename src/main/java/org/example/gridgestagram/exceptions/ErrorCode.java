@@ -34,8 +34,11 @@ public enum ErrorCode {
     INVALID_FILE_ORDER("FILE_002", "파일 순서가 유효하지 않습니다.", 400),
     DUPLICATE_FILE_ORDER("FILE_003", "중복된 파일 순서입니다.", 400),
     FILE_SAVE_FAILED("FILE_004", "파일 저장에 실패하였습니다.", 500),
-    INVALID_FILE("FILE_005", "파일이 유효하지 않습니다..", 400),
-
+    INVALID_FILE("FILE_005", "파일이 유효하지 않습니다.", 400),
+    FILE_NOT_UPLOADED_TO_S3("FILE_06", "파일이 S3에 업로드되지 않았습니다.", 400),
+    INVALID_FILE_EXTENSION("FILE_07", "지원하지 않는 파일 확장자입니다.", 400),
+    INVALID_CONTENT_TYPE("FILE_08", "지원하지 않는 Content-Type입니다.", 400),
+    S3_UPLOAD_FAILED("FILE_09", "S3에 업로드하는데 실패하였습니다.", 500),
     // 게시물 관련
     FEED_LIST_FETCH_FAILED("FEED_001", "피드 목록을 불러오는데 실패하였습니다.", 500),
     INVALID_FEED_ID("FEED_VALIDATION_001", "피드 ID가 유효하지 않습니다.", 400),
