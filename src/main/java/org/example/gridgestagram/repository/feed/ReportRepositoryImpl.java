@@ -20,7 +20,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class ReportQueryRepository implements IReportRepository {
+public class ReportRepositoryImpl implements ReportRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 

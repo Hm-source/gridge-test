@@ -5,7 +5,7 @@ import org.example.gridgestagram.repository.feed.entity.vo.ReportStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-public interface IReportRepository {
+public interface ReportRepositoryCustom {
 
     Page<ReportQueryDto> findReports(Pageable pageable, ReportStatus status);
 }

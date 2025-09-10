@@ -8,8 +8,8 @@ import org.example.gridgestagram.exceptions.CustomException;
 import org.example.gridgestagram.exceptions.ErrorCode;
 import org.example.gridgestagram.repository.feed.CommentRepository;
 import org.example.gridgestagram.repository.feed.FeedRepository;
-import org.example.gridgestagram.repository.feed.ReportQueryRepository;
 import org.example.gridgestagram.repository.feed.ReportRepository;
+import org.example.gridgestagram.repository.feed.ReportRepositoryImpl;
 import org.example.gridgestagram.repository.feed.entity.Comment;
 import org.example.gridgestagram.repository.feed.entity.Feed;
 import org.example.gridgestagram.repository.feed.entity.Report;
@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ReportService {
 
-    private final ReportQueryRepository reportQueryRepository;
+    private final ReportRepositoryImpl reportRepositoryImpl;
     private final AuthenticationService authenticationService;
     private final ReportRepository reportRepository;
     private final CommentRepository commentRepository;
@@ -34,7 +34,7 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public Page<ReportQueryDto> getReports(Pageable pageable, ReportStatus status) {
-        return reportQueryRepository.findReports(pageable, status);
+        return reportRepositoryImpl.findReports(pageable, status);
     }
 
     @Transactional
