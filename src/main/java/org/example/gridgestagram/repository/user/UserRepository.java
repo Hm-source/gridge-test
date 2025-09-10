@@ -18,4 +18,6 @@ public interface UserRepository extends JpaRepository<User, Long>, IUserReposito
     User save(User entity);
 
     void deleteById(Long id);
+
+    Optional<User> findByPhone(String phone);
 }

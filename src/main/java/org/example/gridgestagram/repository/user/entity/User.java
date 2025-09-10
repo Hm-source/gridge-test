@@ -155,4 +155,9 @@ public class User implements UserDetails {
         this.lastLoginAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

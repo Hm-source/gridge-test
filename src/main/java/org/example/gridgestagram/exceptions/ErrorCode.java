@@ -63,6 +63,20 @@ public enum ErrorCode {
     COMMENT_UPDATE_FAILED("COMMENT_004", "댓글 수정에 실패했습니다.", 500),
     COMMENT_DELETE_FAILED("COMMENT_005", "댓글 삭제에 실패했습니다.", 500),
     COMMENT_LIST_FETCH_FAILED("COMMENT_006", "댓글 목록 조회에 실패했습니다.", 500),
+
+    // 비밀번호 관련
+    INVALID_RESET_TOKEN("RESET_001", "유효하지 않은 초기화 토큰입니다.", 400),
+    EXPIRED_RESET_TOKEN("RESET_002", "만료된 초기화 토큰입니다.", 400),
+    INVALID_VERIFICATION_CODE("RESET_003", "잘못된 인증 코드입니다.", 400),
+    TOO_MANY_RESET_ATTEMPTS("RESET_004", "너무 많은 초기화 시도입니다. 1시간 후 다시 시도하세요.", 429),
+    TOO_MANY_VERIFY_ATTEMPTS("RESET_005", "너무 많은 인증 시도입니다. 10분 후 다시 시도하세요.", 429),
+    VERIFICATION_SEND_FAILED("RESET_006", "인증 코드 전송에 실패했습니다.", 500),
+    INVALID_PASSWORD_FORMAT("RESET_007", "비밀번호는 6자~20자, 영문+숫자 조합이어야 합니다.", 400),
+    SAME_AS_CURRENT_PASSWORD("RESET_008", "현재 비밀번호와 동일합니다.", 400),
+    PASSWORD_UPDATE_FAILED("RESET_009", "비밀번호 변경에 실패했습니다.", 500),
+    ALREADY_VERIFIED_TOKEN("RESET_010", "이미 인증된 토큰입니다.", 400),
+    VERIFICATION_CODE_UPDATE_FAILED("RESET_011", "인증 코드 업데이트에 실패했습니다.", 500),
+
     // 공통
     INVALID_REQUEST("COMMON_001", "유효하지 않은 요청입니다.", 400);
     private final String code;
