@@ -51,7 +51,6 @@ public class ReportQueryRepository implements IReportRepository {
                     .then(commentWriter.name)
                     .otherwise(""),
                 report.reason,
-                report.description,
                 report.status,
                 report.createdAt,
                 report.processedAt

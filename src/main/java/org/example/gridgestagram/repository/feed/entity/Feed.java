@@ -78,7 +78,7 @@ public class Feed {
     @Default
     @OneToMany(mappedBy = "feed", cascade = {CascadeType.PERSIST,
         CascadeType.REMOVE}, orphanRemoval = true)
-    private List<FeedReport> reports = new ArrayList<>();
+    private List<Report> reports = new ArrayList<>();
 
 
     public static Feed create(User user, String content) {
