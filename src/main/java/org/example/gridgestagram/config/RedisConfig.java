@@ -1,10 +1,7 @@
 package org.example.gridgestagram.config;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +15,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.util.StringUtils;
 
@@ -46,7 +43,6 @@ public class RedisConfig {
         redisConfiguration.setHostName(host);
         redisConfiguration.setPort(port);
 
-        // 패스워드가 설정되어 있는 경우에만 적용
         if (StringUtils.hasText(password)) {
             redisConfiguration.setPassword(password);
         }
@@ -57,7 +53,6 @@ public class RedisConfig {
 
         LettuceConnectionFactory factory = new LettuceConnectionFactory(redisConfiguration,
             clientConfiguration);
-
         log.info("Redis connection factory created - host: {}, port: {}", host, port);
         return factory;
     }
@@ -67,30 +62,22 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
 
-        // JSON 직렬화 설정
-        Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer =
-            new Jackson2JsonRedisSerializer<>(Object.class);
-
+        // ObjectMapper 설정 (Java 8 날짜/시간 지원)
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        objectMapper.activateDefaultTyping(
-            LaissezFaireSubTypeValidator.instance,
-            ObjectMapper.DefaultTyping.NON_FINAL
-        );
-        objectMapper.registerModule(new JavaTimeModule()); // LocalDateTime 등 Java 8 시간 API 지원
+        objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        jackson2JsonRedisSerializer.setObjectMapper(objectMapper);
+        // GenericJackson2JsonRedisSerializer 사용
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(
+            objectMapper);
 
-        // Key는 String, Value는 JSON으로 직렬화
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(jackson2JsonRedisSerializer);
+        template.setValueSerializer(serializer);
         template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(jackson2JsonRedisSerializer);
+        template.setHashValueSerializer(serializer);
 
         template.afterPropertiesSet();
-
-        log.info("RedisTemplate configured with JSON serialization");
+        log.info("RedisTemplate configured with GenericJackson2JsonRedisSerializer");
         return template;
     }
 

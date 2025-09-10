@@ -36,7 +36,8 @@ public class Subscription {
 
     @Column(name = "name", nullable = false)
     private String name;
-
+    
+    @Builder.Default
     @OneToMany(mappedBy = "subscription", cascade = {CascadeType.PERSIST,
         CascadeType.REMOVE}, orphanRemoval = true)
     private List<SubscriptionHistory> subscriptionHistories = new ArrayList<>();
