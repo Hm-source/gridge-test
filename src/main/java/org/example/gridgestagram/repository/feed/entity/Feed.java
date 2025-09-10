@@ -12,18 +12,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.gridgestagram.controller.feed.dto.FileUploadInfo;
-import org.example.gridgestagram.exceptions.CustomException;
-import org.example.gridgestagram.exceptions.ErrorCode;
 import org.example.gridgestagram.repository.files.entity.Files;
 import org.example.gridgestagram.repository.user.entity.User;
 
@@ -99,69 +94,12 @@ public class Feed {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void incrementLikeCount() {
-        this.likeCount++;
-    }
-
-    public void decrementLikeCount() {
-        if (this.likeCount > 0) {
-            this.likeCount--;
-        }
-    }
-
     public void incrementCommentCount() {
         this.commentCount++;
     }
 
-    public void incrementReportCount() {
-        this.reportCount++;
-        // 신고 횟수가 임계값을 넘으면 자동 숨김 (임시로 처리)
-        if (this.reportCount >= 5) {
-            hide();
-        }
-    }
-
-    public void addFiles(List<FileUploadInfo> fileInfos) {
-        if (fileInfos == null || fileInfos.isEmpty()) {
-            throw new CustomException(ErrorCode.INVALID_FILE);
-        }
-
-        validateFilesCount(fileInfos.size());
-        validateFilesOrdering(fileInfos);
-
-        for (FileUploadInfo fileInfo : fileInfos) {
-            Files file = Files.create(this, fileInfo.getUrl(), fileInfo.getOrder());
-            addFile(file);
-        }
-    }
-
     public void addFile(Files file) {
         this.files.add(file);
-    }
-
-    private void validateFilesCount(int newFilesCount) {
-        int totalCount = this.files.size() + newFilesCount;
-        if (totalCount > MAX_FILES_COUNT) {
-            throw new CustomException(ErrorCode.TOO_MANY_FILES);
-        }
-    }
-
-    private void validateFilesOrdering(List<FileUploadInfo> fileInfos) {
-        Set<Integer> orders = new HashSet<>();
-
-        for (FileUploadInfo fileInfo : fileInfos) {
-            Integer order = fileInfo.getOrder();
-            if (!orders.add(order)) {
-                throw new CustomException(ErrorCode.DUPLICATE_FILE_ORDER);
-            }
-        }
-
-        List<Integer> sortedOrders = orders.stream().sorted().toList();
-        for (int i = 0; i < sortedOrders.size(); i++) {
-            if (!sortedOrders.get(i).equals(i)) {
-                throw new CustomException(ErrorCode.INVALID_FILE_ORDER);
-            }
-        }
     }
 
 }

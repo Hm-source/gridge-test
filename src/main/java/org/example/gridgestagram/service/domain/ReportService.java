@@ -86,6 +86,9 @@ public class ReportService {
                 Comment comment = commentRepository.findById(report.getTargetId())
                     .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
                 comment.hide();
+                Feed feed = feedRepository.findById(comment.getFeed().getId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.FEED_NOT_FOUND));
+                feed.decrementCommentCount();
             }
         }
     }
