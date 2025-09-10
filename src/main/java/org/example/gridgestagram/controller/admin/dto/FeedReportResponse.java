@@ -16,6 +16,7 @@ public class FeedReportResponse {
     private Long feedId;
     private String feedContent;
     private UserSimpleResponse reporter;
+    private UserSimpleResponse writer;
     private ReportReason reason;
     private String description;
     private ReportStatus status;
@@ -29,6 +30,7 @@ public class FeedReportResponse {
             .feedId(report.getFeed().getId())
             .feedContent(report.getFeed().getContent())
             .reporter(UserSimpleResponse.from(report.getReporter()))
+            .writer(UserSimpleResponse.from(report.getFeed().getUser()))
             .reason(report.getReason())
             .description(report.getDescription())
             .status(report.getStatus())
