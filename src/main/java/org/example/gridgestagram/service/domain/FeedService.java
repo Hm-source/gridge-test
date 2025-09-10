@@ -16,7 +16,6 @@ import org.example.gridgestagram.repository.feed.CommentRepository;
 import org.example.gridgestagram.repository.feed.FeedRepository;
 import org.example.gridgestagram.repository.feed.entity.Comment;
 import org.example.gridgestagram.repository.feed.entity.Feed;
-import org.example.gridgestagram.repository.files.entity.Files;
 import org.example.gridgestagram.repository.user.entity.User;
 import org.example.gridgestagram.utils.PaginationUtils;
 import org.springframework.data.domain.Page;
@@ -96,25 +95,32 @@ public class FeedService {
     }
 
     @Transactional
-    public void deleteFeed(Long feedId, Long userId) {
+    public Feed deleteFeed(Long feedId, Long userId) {
+        try {
+            Feed feed = feedRepository.findByIdAndUserId(feedId, userId).orElseThrow(
+                () -> new CustomException(ErrorCode.FEED_NOT_FOUND)
+            );
+            feedRepository.deleteById(feed.getId());
+            return feed;
+        } catch (CustomException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.FEED_DELETE_FAILED);
+        }
+    }
+
+    @Transactional
+    public Feed hideFeed(Long feedId, Long userId) {
         try {
             Feed feed = feedRepository.findByIdAndUserId(feedId, userId).orElseThrow(
                 () -> new CustomException(ErrorCode.FEED_NOT_FOUND)
             );
             feed.hide();
-
-            List<String> fileUrls = feed.getFiles().stream()
-                .map(Files::getUrl)
-                .toList();
-
-            if (!fileUrls.isEmpty()) {
-//                deleteFilesFromS3Async(fileUrls);
-            }
-
+            return feed;
         } catch (CustomException e) {
             throw e;
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.FEED_DELETE_FAILED);
+            throw new CustomException(ErrorCode.FEED_HIDE_FAILED);
         }
     }
 
@@ -148,4 +154,6 @@ public class FeedService {
             throw new CustomException(ErrorCode.FEED_UPDATE_FAILED);
         }
     }
+
+
 }

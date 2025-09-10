@@ -39,6 +39,7 @@ public enum ErrorCode {
     INVALID_FILE_EXTENSION("FILE_07", "지원하지 않는 파일 확장자입니다.", 400),
     INVALID_CONTENT_TYPE("FILE_08", "지원하지 않는 Content-Type입니다.", 400),
     S3_UPLOAD_FAILED("FILE_09", "S3에 업로드하는데 실패하였습니다.", 500),
+    S3_DELETED_FAILED("FILE_10", "S3 파일 삭제를 실패하여습니다.", 500),
     // 게시물 관련
     FEED_LIST_FETCH_FAILED("FEED_001", "피드 목록을 불러오는데 실패하였습니다.", 500),
     INVALID_FEED_ID("FEED_VALIDATION_001", "피드 ID가 유효하지 않습니다.", 400),
@@ -47,7 +48,7 @@ public enum ErrorCode {
     FEED_DELETE_FAILED("FEED_004", "피드 삭제를 실패하였습니다.", 500),
     FEED_FETCH_FAILED("FEED_005", "게시물 조회에 실패했습니다.", 500),
     FEED_NOT_FOUND("FEED_006", "피드를 찾을 수 없습니다.", 500),
-
+    FEED_HIDE_FAILED("FEED_005", "피드 숨김 처리를 실패하였습니다.", 500),
     // 댓글 관련
     COMMENT_NOT_FOUND("COMMENT_001", "댓글을 찾을 수 없습니다.", 404),
     COMMENT_ACCESS_DENIED("COMMENT_002", "댓글에 대한 권한이 없습니다.", 403),

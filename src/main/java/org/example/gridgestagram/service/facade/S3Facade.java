@@ -14,7 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.gridgestagram.controller.file.dto.PresignedUrlResponse;
 import org.example.gridgestagram.exceptions.CustomException;
 import org.example.gridgestagram.exceptions.ErrorCode;
+import org.example.gridgestagram.repository.feed.entity.Feed;
+import org.example.gridgestagram.repository.files.entity.Files;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -106,6 +109,28 @@ public class S3Facade {
             return uri.getPath().substring(1);
         } catch (Exception e) {
             throw new CustomException(ErrorCode.INVALID_FILE);
+        }
+    }
+
+    @Async
+    public void deleteFilesFromS3Async(Feed feed) {
+        List<String> fileUrls = feed.getFiles().stream()
+            .map(Files::getUrl)
+            .toList();
+        for (String fileUrl : fileUrls) {
+            deleteFile(fileUrl);
+        }
+    }
+
+    public void deleteFile(String fileUrl) {
+        try {
+            String objectKey = extractObjectKeyFromUrl(fileUrl);
+
+            if (amazonS3.doesObjectExist(bucketName, objectKey)) {
+                amazonS3.deleteObject(bucketName, objectKey);
+            }
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.S3_DELETED_FAILED);
         }
     }
 }

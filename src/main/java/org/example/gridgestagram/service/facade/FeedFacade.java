@@ -63,7 +63,8 @@ public class FeedFacade {
     @Transactional
     public void deleteFeed(Long feedId) {
         User user = authenticationService.getCurrentUser();
-        feedService.deleteFeed(feedId, user.getId());
+        Feed feed = feedService.deleteFeed(feedId, user.getId());
+        s3Facade.deleteFilesFromS3Async(feed);
     }
 
     private void validateUploadedFiles(List<FileUploadInfo> files) {
