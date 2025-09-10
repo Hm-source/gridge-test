@@ -21,7 +21,6 @@ public class ReportResponse {
     private UserSimpleResponse reporter;
     private UserSimpleResponse writer;
     private ReportReason reason;
-    private String description;
     private ReportStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime processedAt;

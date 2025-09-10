@@ -1,5 +1,6 @@
 package org.example.gridgestagram.service.domain;
 
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.example.gridgestagram.controller.admin.dto.ReportProcessRequest;
 import org.example.gridgestagram.controller.admin.dto.ReportQueryDto;
@@ -33,8 +34,16 @@ public class ReportService {
     private final FeedRepository feedRepository;
 
     @Transactional(readOnly = true)
-    public Page<ReportQueryDto> getReports(Pageable pageable, ReportStatus status) {
-        return reportRepositoryImpl.findReports(pageable, status);
+    public Page<ReportQueryDto> getReports(
+        Pageable pageable,
+        ReportStatus status,
+        String reporterName,
+        String writerName,
+        LocalDate startDate,
+        LocalDate endDate
+    ) {
+        return reportRepositoryImpl.findReports(pageable, status, reporterName, writerName,
+            startDate, endDate);
     }
 
     @Transactional

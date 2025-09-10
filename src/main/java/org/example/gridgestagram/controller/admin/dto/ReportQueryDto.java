@@ -20,7 +20,6 @@ public class ReportQueryDto {
     private String reporterName;
     private String writerName;
     private ReportReason reason;
-    private String description;
     private ReportStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime processedAt;

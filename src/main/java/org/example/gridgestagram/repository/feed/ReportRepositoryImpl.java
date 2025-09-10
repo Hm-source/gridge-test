@@ -1,9 +1,13 @@
 package org.example.gridgestagram.repository.feed;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.example.gridgestagram.controller.admin.dto.ReportQueryDto;
@@ -24,7 +28,12 @@ public class ReportRepositoryImpl implements ReportRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
-    public Page<ReportQueryDto> findReports(Pageable pageable, ReportStatus status) {
+    public Page<ReportQueryDto> findReports(Pageable pageable,
+        ReportStatus status,
+        String reporterName,
+        String writerName,
+        LocalDate startDate,
+        LocalDate endDate) {
         QReport report = QReport.report;
         QFeed feed = QFeed.feed;
         QComment comment = QComment.comment;
@@ -32,7 +41,34 @@ public class ReportRepositoryImpl implements ReportRepositoryCustom {
         QUser feedWriter = new QUser("feedWriter");
         QUser commentWriter = new QUser("commentWriter");
 
-        JPQLQuery<ReportQueryDto> query = queryFactory
+        BooleanBuilder whereClause = new BooleanBuilder();
+
+        // 1. 상태 필터링
+        if (status != null) {
+            whereClause.and(report.status.eq(status));
+        }
+
+        // 2. 신고자 이름 필터링
+        if (reporterName != null && !reporterName.isBlank()) {
+            whereClause.and(report.reporter.name.containsIgnoreCase(reporterName));
+        }
+
+        // 3. 작성자 이름 필터링 (게시글 또는 댓글)
+        if (writerName != null && !writerName.isBlank()) {
+            whereClause.and(feed.user.name.containsIgnoreCase(writerName)
+                .or(comment.user.name.containsIgnoreCase(writerName)));
+        }
+
+        // 4. 날짜 범위 필터링
+        if (startDate != null) {
+            whereClause.and(report.createdAt.goe(LocalDateTime.of(startDate, LocalTime.MIN)));
+        }
+        if (endDate != null) {
+            whereClause.and(report.createdAt.loe(LocalDateTime.of(endDate, LocalTime.MAX)));
+        }
+
+        // 메인 쿼리 구성
+        JPQLQuery<ReportQueryDto> mainQuery = queryFactory
             .select(Projections.constructor(ReportQueryDto.class,
                 report.id,
                 report.type,
@@ -43,12 +79,12 @@ public class ReportRepositoryImpl implements ReportRepositoryCustom {
                     .when(report.type.eq(ReportType.COMMENT))
                     .then(comment.content)
                     .otherwise(""),
-                reporter.name,
+                report.reporter.name, // reporter name can be directly accessed
                 new CaseBuilder()
                     .when(report.type.eq(ReportType.FEED))
-                    .then(feedWriter.name)
+                    .then(feed.user.name)
                     .when(report.type.eq(ReportType.COMMENT))
-                    .then(commentWriter.name)
+                    .then(comment.user.name)
                     .otherwise(""),
                 report.reason,
                 report.status,
@@ -57,19 +93,17 @@ public class ReportRepositoryImpl implements ReportRepositoryCustom {
             ))
             .from(report)
             .leftJoin(reporter).on(report.reporter.id.eq(reporter.id))
-            .leftJoin(feed).on(report.type.eq(ReportType.FEED)
-                .and(report.targetId.eq(feed.id)))
+            .leftJoin(feed).on(report.type.eq(ReportType.FEED).and(report.targetId.eq(feed.id)))
             .leftJoin(feedWriter).on(feed.user.id.eq(feedWriter.id))
-            .leftJoin(comment).on(report.type.eq(ReportType.COMMENT)
-                .and(report.targetId.eq(comment.id)))
+            .leftJoin(comment)
+            .on(report.type.eq(ReportType.COMMENT).and(report.targetId.eq(comment.id)))
             .leftJoin(commentWriter).on(comment.user.id.eq(commentWriter.id));
 
-        if (status != null) {
-            query.where(report.status.eq(status));
-        }
+        mainQuery.where(whereClause);
 
-        long total = query.fetchCount();
-        List<ReportQueryDto> content = query
+        long total = mainQuery.fetch().size();
+
+        List<ReportQueryDto> content = mainQuery
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .orderBy(report.createdAt.desc())
@@ -77,4 +111,5 @@ public class ReportRepositoryImpl implements ReportRepositoryCustom {
 
         return new PageImpl<>(content, pageable, total);
     }
+
 }

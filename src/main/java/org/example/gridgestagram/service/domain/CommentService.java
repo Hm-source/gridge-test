@@ -46,7 +46,8 @@ public class CommentService {
     public Page<CommentResponse> getComments(Long feedId, Pageable pageable) {
         try {
             pageable = PaginationUtils.validateAndAdjust(pageable);
-            Page<Comment> commentPage = commentRepository.findByFeedIdOrderByCreatedAtDesc(feedId,
+            Page<Comment> commentPage = commentRepository.findByFeedIdAndIsVisibleTrueOrderByCreatedAtDesc(
+                feedId,
                 pageable);
             return commentPage.map(CommentResponse::from);
 

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.gridgestagram.controller.feed.dto.CommentCreateRequest;
 import org.example.gridgestagram.controller.feed.dto.CommentResponse;
 import org.example.gridgestagram.controller.feed.dto.ReportRequest;
+import org.example.gridgestagram.controller.feed.dto.ReportResponse;
 import org.example.gridgestagram.service.domain.ReportService;
 import org.example.gridgestagram.service.facade.CommentFacade;
 import org.springframework.data.domain.Page;
@@ -55,11 +56,12 @@ public class CommentController {
     }
 
     @PostMapping("/{commentId}/reports")
-    public ResponseEntity<Void> reportComment(
+    public ResponseEntity<ReportResponse> reportComment(
         @PathVariable Long commentId,
         @Valid @RequestBody ReportRequest request) {
 
-        reportService.report(request.getType(), commentId, request.getReason());
-        return ResponseEntity.ok().build();
+        ReportResponse response = reportService.report(request.getType(), commentId,
+            request.getReason());
+        return ResponseEntity.ok(response);
     }
 }
