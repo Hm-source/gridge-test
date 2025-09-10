@@ -1,7 +1,6 @@
 package org.example.gridgestagram.service.domain;
 
 import lombok.RequiredArgsConstructor;
-import org.example.gridgestagram.controller.admin.dto.FeedReportResponse;
 import org.example.gridgestagram.controller.admin.dto.ReportProcessRequest;
 import org.example.gridgestagram.controller.feed.dto.FeedReportRequest;
 import org.example.gridgestagram.exceptions.CustomException;
