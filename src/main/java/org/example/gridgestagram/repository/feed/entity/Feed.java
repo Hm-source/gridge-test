@@ -75,12 +75,6 @@ public class Feed {
         CascadeType.REMOVE}, orphanRemoval = true)
     private List<Likes> likes = new ArrayList<>();
 
-    @Default
-    @OneToMany(mappedBy = "feed", cascade = {CascadeType.PERSIST,
-        CascadeType.REMOVE}, orphanRemoval = true)
-    private List<Report> reports = new ArrayList<>();
-
-
     public static Feed create(User user, String content) {
         return Feed.builder()
             .user(user)
