@@ -19,6 +19,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.gridgestagram.repository.feed.entity.vo.ReportReason;
+import org.example.gridgestagram.repository.feed.entity.vo.ReportStatus;
 import org.example.gridgestagram.repository.user.entity.User;
 
 @Entity
@@ -50,8 +51,20 @@ public class FeedReport {
     @Column(name = "description", length = 500)
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    @Builder.Default
+    private ReportStatus status = ReportStatus.PENDING;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "processed_at")
+    private LocalDateTime processedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "processed_by")
+    private User processedBy;
 
     public static FeedReport create(Feed feed, User reporter, ReportReason reason,
         String description) {
@@ -62,5 +75,11 @@ public class FeedReport {
             .description(description)
             .createdAt(LocalDateTime.now())
             .build();
+    }
+
+    public void approve(User admin) {
+        this.status = ReportStatus.APPROVED;
+        this.processedAt = LocalDateTime.now();
+        this.processedBy = admin;
     }
 }

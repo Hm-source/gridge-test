@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.gridgestagram.controller.feed.dto.FeedCreateRequest;
 import org.example.gridgestagram.controller.feed.dto.FeedDetailResponse;
+import org.example.gridgestagram.controller.feed.dto.FeedReportRequest;
 import org.example.gridgestagram.controller.feed.dto.FeedResponse;
 import org.example.gridgestagram.controller.feed.dto.FeedUpdateRequest;
 import org.example.gridgestagram.service.facade.FeedFacade;
@@ -65,4 +66,13 @@ public class FeedController {
         return ResponseEntity.noContent().build();
     }
 
+
+    @PostMapping("/{feedId}/reports")
+    public ResponseEntity<Void> reportFeed(
+        @PathVariable Long feedId,
+        @Valid @RequestBody FeedReportRequest request) {
+
+        feedFacade.reportFeed(feedId, request);
+        return ResponseEntity.ok().build();
+    }
 }

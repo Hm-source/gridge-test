@@ -4,6 +4,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.example.gridgestagram.controller.feed.dto.FeedCreateRequest;
 import org.example.gridgestagram.controller.feed.dto.FeedDetailResponse;
+import org.example.gridgestagram.controller.feed.dto.FeedReportRequest;
 import org.example.gridgestagram.controller.feed.dto.FeedResponse;
 import org.example.gridgestagram.controller.feed.dto.FeedUpdateRequest;
 import org.example.gridgestagram.controller.feed.dto.FileUploadInfo;
@@ -12,6 +13,7 @@ import org.example.gridgestagram.exceptions.ErrorCode;
 import org.example.gridgestagram.repository.feed.entity.Feed;
 import org.example.gridgestagram.repository.user.entity.User;
 import org.example.gridgestagram.service.domain.AuthenticationService;
+import org.example.gridgestagram.service.domain.FeedReportService;
 import org.example.gridgestagram.service.domain.FeedService;
 import org.example.gridgestagram.service.domain.FilesService;
 import org.springframework.data.domain.Page;
@@ -27,6 +29,7 @@ public class FeedFacade {
     private final FilesService filesService;
     private final AuthenticationService authenticationService;
     private final S3Facade s3Facade;
+    private final FeedReportService feedReportService;
 
     @Transactional
     public Page<FeedResponse> getFeeds(Pageable pageable) {
@@ -74,5 +77,18 @@ public class FeedFacade {
                     "파일이 S3에 업로드되지 않았습니다: " + file.getUrl());
             }
         }
+    }
+
+    @Transactional
+    public void reportFeed(Long feedId, FeedReportRequest request) {
+        User reporter = authenticationService.getCurrentUser();
+        Feed feed = feedService.findById(feedId);
+
+        if (feed.getUser().getId().equals(reporter.getId())) {
+            throw new CustomException(ErrorCode.CANNOT_REPORT_OWN_FEED);
+        }
+
+        feedReportService.reportFeed(feed, request, reporter);
+
     }
 }

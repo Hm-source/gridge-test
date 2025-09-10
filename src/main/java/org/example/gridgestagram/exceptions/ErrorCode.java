@@ -49,6 +49,13 @@ public enum ErrorCode {
     FEED_FETCH_FAILED("FEED_005", "게시물 조회에 실패했습니다.", 500),
     FEED_NOT_FOUND("FEED_006", "피드를 찾을 수 없습니다.", 500),
     FEED_HIDE_FAILED("FEED_005", "피드 숨김 처리를 실패하였습니다.", 500),
+
+    // 신고 관련
+    CANNOT_REPORT_OWN_FEED("FEED_REPORT_001", "본인 피드는 신고할 수 없습니다.", 400),
+    FEED_REPORT_FAILED("FEED_REPORT_002", "게시물 신고를 실패하였습니다.", 500),
+    ALREADY_REPORTED_FEED("FEED_REPORT_003", "이미 신고한 게시물입니다.", 400),
+    REPORT_NOT_FOUND("FEED_REPORT_NOT_FOUND", "신고 ID에 해당하는 신고 건을 찾을 수 없습니다.", 404),
+    
     // 댓글 관련
     COMMENT_NOT_FOUND("COMMENT_001", "댓글을 찾을 수 없습니다.", 404),
     COMMENT_ACCESS_DENIED("COMMENT_002", "댓글에 대한 권한이 없습니다.", 403),
