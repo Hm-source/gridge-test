@@ -41,6 +41,9 @@ public class Comment {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "is_visible", nullable = false)
+    private Boolean isVisible;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -52,6 +55,7 @@ public class Comment {
             .feed(feed)
             .user(user)
             .content(content)
+            .isVisible(true)
             .createdAt(LocalDateTime.now())
             .build();
     }
@@ -60,5 +64,10 @@ public class Comment {
         if (!comment.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.COMMENT_ACCESS_DENIED);
         }
+    }
+
+    public void hide() {
+        this.isVisible = false;
+        this.updatedAt = LocalDateTime.now();
     }
 }

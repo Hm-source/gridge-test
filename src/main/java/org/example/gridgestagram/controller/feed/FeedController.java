@@ -4,9 +4,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.gridgestagram.controller.feed.dto.FeedCreateRequest;
 import org.example.gridgestagram.controller.feed.dto.FeedDetailResponse;
-import org.example.gridgestagram.controller.feed.dto.FeedReportRequest;
 import org.example.gridgestagram.controller.feed.dto.FeedResponse;
 import org.example.gridgestagram.controller.feed.dto.FeedUpdateRequest;
+import org.example.gridgestagram.controller.feed.dto.ReportRequest;
+import org.example.gridgestagram.controller.feed.dto.ReportResponse;
+import org.example.gridgestagram.service.domain.ReportService;
 import org.example.gridgestagram.service.facade.FeedFacade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class FeedController {
 
     private final FeedFacade feedFacade;
+    private final ReportService reportService;
 
     @PostMapping
     public ResponseEntity<FeedResponse> createFeed(
@@ -68,11 +71,12 @@ public class FeedController {
 
 
     @PostMapping("/{feedId}/reports")
-    public ResponseEntity<Void> reportFeed(
+    public ResponseEntity<ReportResponse> reportFeed(
         @PathVariable Long feedId,
-        @Valid @RequestBody FeedReportRequest request) {
+        @Valid @RequestBody ReportRequest request) {
 
-        feedFacade.reportFeed(feedId, request);
-        return ResponseEntity.ok().build();
+        ReportResponse response = reportService.report(request.getType(), feedId,
+            request.getReason());
+        return ResponseEntity.ok(response);
     }
 }

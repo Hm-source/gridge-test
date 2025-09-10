@@ -6,9 +6,7 @@ import org.example.gridgestagram.controller.admin.dto.ReportProcessRequest;
 import org.example.gridgestagram.controller.feed.dto.FeedReportRequest;
 import org.example.gridgestagram.exceptions.CustomException;
 import org.example.gridgestagram.exceptions.ErrorCode;
-import org.example.gridgestagram.repository.feed.FeedReportRepository;
 import org.example.gridgestagram.repository.feed.entity.Feed;
-import org.example.gridgestagram.repository.feed.entity.FeedReport;
 import org.example.gridgestagram.repository.feed.entity.vo.ReportStatus;
 import org.example.gridgestagram.repository.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -27,7 +25,7 @@ public class FeedReportService {
     public void reportFeed(Feed feed, FeedReportRequest request, User reporter) {
         try {
             if (feedReportRepository.existsByFeedIdAndReporterId(feed.getId(), reporter.getId())) {
-                throw new CustomException(ErrorCode.ALREADY_REPORTED_FEED);
+                throw new CustomException(ErrorCode.ALREADY_REPORTED);
             }
 
             FeedReport report = FeedReport.create(feed, reporter, request.getReason(),

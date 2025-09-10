@@ -20,62 +20,63 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.gridgestagram.repository.feed.entity.vo.ReportReason;
 import org.example.gridgestagram.repository.feed.entity.vo.ReportStatus;
+import org.example.gridgestagram.repository.feed.entity.vo.ReportType;
 import org.example.gridgestagram.repository.user.entity.User;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Builder
 @AllArgsConstructor
-@Table(name = "feed_report", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"feed_id", "reporter_id"})
+@Builder
+@Table(name = "reports", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"type", "target_id", "reporter_id"})
 })
-public class FeedReport {
+public class Report {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "feed_id", nullable = false)
-    private Feed feed;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ReportType type;   // FEED or COMMENT
+
+    @Column(name = "target_id", nullable = false)
+    private Long targetId;     // FeedId or CommentId
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter_id", nullable = false)
     private User reporter;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "reason", nullable = false)
+    @Column(nullable = false, length = 50)
     private ReportReason reason;
 
-    @Column(name = "description", length = 500)
-    private String description;
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(nullable = false, length = 20)
     @Builder.Default
     private ReportStatus status = ReportStatus.PENDING;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "processed_at")
     private LocalDateTime processedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "processed_by")
     private User processedBy;
 
-    public static FeedReport create(Feed feed, User reporter, ReportReason reason,
-        String description) {
-        return FeedReport.builder()
-            .feed(feed)
+    public static Report create(ReportType type, Long targetId, User reporter,
+        ReportReason reason) {
+        return Report.builder()
+            .type(type)
+            .targetId(targetId)
             .reporter(reporter)
             .reason(reason)
-            .description(description)
             .createdAt(LocalDateTime.now())
             .build();
     }
+    
 
     public void approve(User admin) {
         this.status = ReportStatus.APPROVED;

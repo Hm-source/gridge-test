@@ -1,19 +1,23 @@
-package org.example.gridgestagram.controller.admin.dto;
+package org.example.gridgestagram.controller.feed.dto;
 
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import org.example.gridgestagram.controller.user.dto.UserSimpleResponse;
+import org.example.gridgestagram.repository.feed.entity.Report;
 import org.example.gridgestagram.repository.feed.entity.vo.ReportReason;
 import org.example.gridgestagram.repository.feed.entity.vo.ReportStatus;
+import org.example.gridgestagram.repository.feed.entity.vo.ReportType;
+import org.example.gridgestagram.repository.user.entity.User;
 
 @Getter
 @Builder
-public class FeedReportResponse {
+public class ReportResponse {
 
     private Long id;
-    private Long feedId;
-    private String feedContent;
+    private ReportType type;
+    private Long targetId;
+    private String content; // 피드 내용 또는 댓글 내용
     private UserSimpleResponse reporter;
     private UserSimpleResponse writer;
     private ReportReason reason;
@@ -23,15 +27,15 @@ public class FeedReportResponse {
     private LocalDateTime processedAt;
     private UserSimpleResponse processedBy;
 
-    public static FeedReportResponse from(FeedReport report) {
-        return FeedReportResponse.builder()
+    public static ReportResponse from(Report report, String content, User writer) {
+        return ReportResponse.builder()
             .id(report.getId())
-            .feedId(report.getFeed().getId())
-            .feedContent(report.getFeed().getContent())
+            .type(report.getType())
+            .targetId(report.getTargetId())
+            .content(content)
             .reporter(UserSimpleResponse.from(report.getReporter()))
-            .writer(UserSimpleResponse.from(report.getFeed().getUser()))
+            .writer(UserSimpleResponse.from(writer))
             .reason(report.getReason())
-            .description(report.getDescription())
             .status(report.getStatus())
             .createdAt(report.getCreatedAt())
             .processedAt(report.getProcessedAt())

@@ -2,10 +2,10 @@ package org.example.gridgestagram.controller.admin;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.gridgestagram.controller.admin.dto.FeedReportResponse;
 import org.example.gridgestagram.controller.admin.dto.ReportProcessRequest;
+import org.example.gridgestagram.controller.admin.dto.ReportQueryDto;
 import org.example.gridgestagram.repository.feed.entity.vo.ReportStatus;
-import org.example.gridgestagram.service.domain.FeedReportService;
+import org.example.gridgestagram.service.domain.ReportService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -26,16 +26,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminReportController {
 
-    private final FeedReportService feedReportService;
+    private final ReportService reportService;
 
     @GetMapping
     @Secured("ROLE_ADMIN")
-    public ResponseEntity<Page<FeedReportResponse>> getReports(
+    public ResponseEntity<Page<ReportQueryDto>> getReports(
         @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
         Pageable pageable,
         @RequestParam(required = false) ReportStatus status) {
 
-        Page<FeedReportResponse> reports = feedReportService.getReports(pageable, status);
+        Page<ReportQueryDto> reports = reportService.getReports(pageable, status);
         return ResponseEntity.ok(reports);
     }
 
@@ -45,7 +45,7 @@ public class AdminReportController {
         @PathVariable Long reportId,
         @Valid @RequestBody ReportProcessRequest request) {
 
-        feedReportService.processReport(reportId, request);
+        reportService.processReport(reportId, request);
         return ResponseEntity.ok().build();
     }
 
@@ -55,7 +55,7 @@ public class AdminReportController {
         @PathVariable Long reportId,
         @Valid @RequestBody ReportProcessRequest request) {
 
-        feedReportService.deleteReport(reportId);
+        reportService.deleteReport(reportId);
         return ResponseEntity.ok().build();
     }
 }

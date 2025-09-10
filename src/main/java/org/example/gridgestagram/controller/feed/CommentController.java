@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.gridgestagram.controller.feed.dto.CommentCreateRequest;
 import org.example.gridgestagram.controller.feed.dto.CommentResponse;
+import org.example.gridgestagram.controller.feed.dto.ReportRequest;
+import org.example.gridgestagram.service.domain.ReportService;
 import org.example.gridgestagram.service.facade.CommentFacade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CommentController {
 
     private final CommentFacade commentFacade;
+    private final ReportService reportService;
 
     @PostMapping
     public ResponseEntity<CommentResponse> createComment(
@@ -49,5 +52,14 @@ public class CommentController {
         @PathVariable Long commentId, @PathVariable Long feedId) {
         commentFacade.deleteComment(commentId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{commentId}/reports")
+    public ResponseEntity<Void> reportComment(
+        @PathVariable Long commentId,
+        @Valid @RequestBody ReportRequest request) {
+
+        reportService.report(request.getType(), commentId, request.getReason());
+        return ResponseEntity.ok().build();
     }
 }
