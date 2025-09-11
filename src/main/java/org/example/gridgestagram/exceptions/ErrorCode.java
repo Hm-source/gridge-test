@@ -87,6 +87,11 @@ public enum ErrorCode {
 
     USER_NOT_ACTIVE("USER_001", "활성화된 회원이 아닙니다.", 500),
 
+    ADMIN_ACCESS_DENIED("ADMIN_001", "관리자 권한이 필요합니다", 403),
+    ADMIN_FEED_SEARCH_FAILED("ADMIN_002", "관리자 피드 검색에 실패했습니다", 500),
+    ADMIN_FEED_DETAIL_FAILED("ADMIN_003", "관리자 피드 상세 조회에 실패했습니다", 500),
+    ADMIN_FEED_DELETE_FAILED("ADMIN_004", "관리자 피드 삭제에 실패했습니다", 500),
+    
     // 공통
     INVALID_REQUEST("COMMON_001", "유효하지 않은 요청입니다.", 400);
     private final String code;

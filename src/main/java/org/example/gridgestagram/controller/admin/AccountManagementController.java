@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.gridgestagram.controller.admin.dto.AccountActionResponse;
 import org.example.gridgestagram.service.domain.AccountManagementService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/accounts")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@Secured("ROLE_ADMIN")
 public class AccountManagementController {
 
     private final AccountManagementService accountManagementService;

@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface FeedRepository extends JpaRepository<Feed, Long> {
+public interface FeedRepository extends JpaRepository<Feed, Long>, AdminFeedRepositoryCustom {
 
     @Query(value = "SELECT DISTINCT f FROM Feed f " +
         "LEFT JOIN FETCH f.user " +
