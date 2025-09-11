@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import org.example.gridgestagram.controller.user.dto.UserSimpleResponse;
 import org.example.gridgestagram.repository.feed.entity.Feed;
+import org.example.gridgestagram.repository.feed.entity.vo.FeedStatus;
 
 @Getter
 @Builder(toBuilder = true)
@@ -15,7 +16,7 @@ public class FeedResponse {
 
     private Long id;
     private String content;
-    private Boolean isVisible;
+    private FeedStatus status;
     private Integer likeCount;
     private Integer commentCount;
     private UserSimpleResponse user;
@@ -33,7 +34,7 @@ public class FeedResponse {
         return FeedResponse.builder()
             .id(feed.getId())
             .content(feed.getContent())
-            .isVisible(feed.getIsVisible())
+            .status(feed.getStatus())
             .likeCount(feed.getLikeCount())
             .commentCount(feed.getCommentCount())
             .user(UserSimpleResponse.from(feed.getUser()))

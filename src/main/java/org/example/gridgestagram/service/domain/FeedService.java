@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class FeedService {
 
     private final FeedRepository feedRepository;
-    private final FilesService filesService;
     private final CommentRepository commentRepository;
 
     @Transactional(readOnly = true)
@@ -37,7 +36,7 @@ public class FeedService {
         pageable = PaginationUtils.validateAndAdjust(pageable);
 
         try {
-            Page<Feed> feedPage = feedRepository.findByIsVisibleTrue(pageable);
+            Page<Feed> feedPage = feedRepository.findByStatusActive(pageable);
             List<Long> feedIds = feedPage.getContent().stream()
                 .map(Feed::getId)
                 .toList();
@@ -72,7 +71,7 @@ public class FeedService {
     @Transactional(readOnly = true)
     public Feed getFeed(Long feedId) {
         try {
-            return feedRepository.findByIdAndIsVisibleTrue(feedId)
+            return feedRepository.findByIdAndStatusActive(feedId)
                 .orElseThrow(() -> new CustomException(ErrorCode.FEED_NOT_FOUND));
         } catch (CustomException e) {
             throw e;
@@ -100,8 +99,9 @@ public class FeedService {
             Feed feed = feedRepository.findByIdAndUserId(feedId, userId).orElseThrow(
                 () -> new CustomException(ErrorCode.FEED_NOT_FOUND)
             );
-            feedRepository.deleteById(feed.getId());
+            feed.deleteByUser();
             return feed;
+
         } catch (CustomException e) {
             throw e;
         } catch (Exception e) {
@@ -130,7 +130,7 @@ public class FeedService {
             throw new CustomException(ErrorCode.INVALID_FEED_ID);
         }
         try {
-            return feedRepository.findByIdAndIsVisibleTrue(feedId)
+            return feedRepository.findByIdAndStatusActive(feedId)
                 .orElseThrow(() -> new CustomException(ErrorCode.FEED_NOT_FOUND));
         } catch (CustomException e) {
             throw e;

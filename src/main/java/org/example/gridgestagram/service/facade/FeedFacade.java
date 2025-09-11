@@ -64,7 +64,7 @@ public class FeedFacade {
     public void deleteFeed(Long feedId) {
         User user = authenticationService.getCurrentUser();
         Feed feed = feedService.deleteFeed(feedId, user.getId());
-        s3Facade.deleteFilesFromS3Async(feed);
+//        s3Facade.deleteFilesFromS3Async(feed); // 논리삭제에서는 굳이 파일을 삭제하지 않아도 될 것으로 보임
     }
 
     private void validateUploadedFiles(List<FileUploadInfo> files) {

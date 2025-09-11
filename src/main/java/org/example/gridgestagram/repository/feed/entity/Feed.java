@@ -3,6 +3,8 @@ package org.example.gridgestagram.repository.feed.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,6 +21,7 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.example.gridgestagram.repository.feed.entity.vo.FeedStatus;
 import org.example.gridgestagram.repository.files.entity.Files;
 import org.example.gridgestagram.repository.user.entity.User;
 
@@ -39,9 +42,9 @@ public class Feed {
     private User user;
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
-    @Default
-    @Column(name = "is_visible", nullable = false)
-    private Boolean isVisible = true;
+    //    @Default
+//    @Column(name = "is_visible", nullable = false)
+//    private Boolean isVisible = true;
     @Default
     @Column(name = "like_count", nullable = false)
     private Integer likeCount = 0;
@@ -55,6 +58,19 @@ public class Feed {
     private LocalDateTime createdAt;
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @Column(name = "deleted_by")
+    private String deletedBy;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private FeedStatus status = FeedStatus.ACTIVE;
+
+
     @Builder.Default
     @OneToMany(mappedBy = "feed", cascade = {CascadeType.PERSIST,
         CascadeType.REMOVE}, orphanRemoval = true)
@@ -90,7 +106,7 @@ public class Feed {
     }
 
     public void hide() {
-        this.isVisible = false;
+        this.status = FeedStatus.HIDDEN;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -117,4 +133,44 @@ public class Feed {
             .anyMatch(like -> like.getUser().getId().equals(userId));
     }
 
+    public void deleteByUser() {
+        this.status = FeedStatus.USER_DELETED;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = "USER";
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void deleteByAdmin(String reason) {
+        this.status = FeedStatus.ADMIN_DELETED;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = "ADMIN";
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void markAsReported() {
+        this.status = FeedStatus.REPORTED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void updateStatus(FeedStatus newStatus) {
+        this.status = newStatus;
+        this.updatedAt = LocalDateTime.now();
+
+        if (newStatus.isDeleted()) {
+            this.deletedAt = LocalDateTime.now();
+            this.deletedBy = "ADMIN";
+        } else if (newStatus == FeedStatus.ACTIVE) {
+            // 복구하는 경우
+            this.deletedAt = null;
+            this.deletedBy = null;
+        }
+    }
+    
+    public boolean isDeleted() {
+        return this.status.isDeleted();
+    }
+
+    public boolean isActive() {
+        return this.status == FeedStatus.ACTIVE;
+    }
 }
