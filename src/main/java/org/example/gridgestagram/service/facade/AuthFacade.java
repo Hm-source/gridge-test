@@ -16,6 +16,7 @@ import org.example.gridgestagram.exceptions.CustomException;
 import org.example.gridgestagram.exceptions.ErrorCode;
 import org.example.gridgestagram.repository.user.UserRepository;
 import org.example.gridgestagram.repository.user.entity.User;
+import org.example.gridgestagram.repository.user.entity.vo.UserStatus;
 import org.example.gridgestagram.security.JwtProvider;
 import org.example.gridgestagram.service.domain.RefreshTokenService;
 import org.example.gridgestagram.service.domain.UserService;
@@ -56,6 +57,13 @@ public class AuthFacade {
         );
 
         User user = (User) authentication.getPrincipal();
+
+        UserStatus status = user.getStatus();
+
+        if (status != UserStatus.ACTIVE) {
+            throw new CustomException(ErrorCode.USER_NOT_ACTIVE);
+        }
+
         user.updateLastLoginAt();
         userRepository.save(user);
 

@@ -14,6 +14,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.example.gridgestagram.exceptions.CustomException;
+import org.example.gridgestagram.exceptions.ErrorCode;
 import org.example.gridgestagram.repository.user.entity.User;
 
 @Entity
@@ -35,9 +37,12 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-    
+
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    @Column(name = "is_visible", nullable = false)
+    private Boolean isVisible;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -45,12 +50,24 @@ public class Comment {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public static Comment create(Feed feed, User user, String content, Comment parent) {
+    public static Comment create(Feed feed, User user, String content) {
         return Comment.builder()
             .feed(feed)
             .user(user)
             .content(content)
+            .isVisible(true)
             .createdAt(LocalDateTime.now())
             .build();
+    }
+
+    public void validateCommentOwner(Comment comment, Long userId) {
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.COMMENT_ACCESS_DENIED);
+        }
+    }
+
+    public void hide() {
+        this.isVisible = false;
+        this.updatedAt = LocalDateTime.now();
     }
 }

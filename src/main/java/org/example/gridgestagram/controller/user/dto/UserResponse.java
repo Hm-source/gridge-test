@@ -13,7 +13,7 @@ import org.example.gridgestagram.repository.user.entity.User;
 public class UserResponse {
 
     private Long id;
-    private String email;
+    private String username;
     private String name;
     private LocalDate birthdate;
     private String profileImageUrl;
@@ -25,7 +25,7 @@ public class UserResponse {
     public static UserResponse from(User user) {
         return UserResponse.builder()
             .id(user.getId())
-            .email(user.getUsername())
+            .username(user.getUsername())
             .name(user.getName())
             .birthdate(user.getBirthdate())
             .profileImageUrl(user.getProfileImageUrl())

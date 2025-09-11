@@ -1,0 +1,47 @@
+package org.example.gridgestagram.controller.admin;
+
+import lombok.RequiredArgsConstructor;
+import org.example.gridgestagram.controller.admin.dto.UserDetailResponse;
+import org.example.gridgestagram.controller.admin.dto.UserSearchCondition;
+import org.example.gridgestagram.service.domain.AdminUserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/admin/users")
+@RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
+@Validated
+public class AdminUserController {
+
+    private final AdminUserService adminUserService;
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<UserDetailResponse>> searchUsers(
+        @ModelAttribute UserSearchCondition condition,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserDetailResponse> users = adminUserService.searchUsers(condition, pageable);
+
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDetailResponse> getUserDetail(@PathVariable Long userId) {
+        UserDetailResponse user = adminUserService.getUserDetail(userId);
+        return ResponseEntity.ok(user);
+    }
+
+}
