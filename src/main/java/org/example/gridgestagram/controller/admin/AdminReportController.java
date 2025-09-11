@@ -65,5 +65,7 @@ public class AdminReportController {
         reportService.deleteReport(reportId);
         return ResponseEntity.ok().build();
     }
+
+
 }
 

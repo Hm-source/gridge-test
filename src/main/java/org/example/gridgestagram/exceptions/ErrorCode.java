@@ -77,6 +77,13 @@ public enum ErrorCode {
     ALREADY_VERIFIED_TOKEN("RESET_010", "이미 인증된 토큰입니다.", 400),
     VERIFICATION_CODE_UPDATE_FAILED("RESET_011", "인증 코드 업데이트에 실패했습니다.", 500),
 
+    ACCOUNT_ALREADY_SUSPENDED("ACCOUNT_001", "이미 일시정지된 계정입니다.", 400),
+    ACCOUNT_ALREADY_WITHDRAWN("ACCOUNT_002", "이미 탈퇴한 계정입니다.", 400),
+    ACCOUNT_NOT_SUSPENDED("ACCOUNT_003", "일시정지되지 않은 계정입니다.", 400),
+    ACCOUNT_NOT_DORMANT("ACCOUNT_004", "휴면 계정이 아닙니다.", 400),
+
+    USER_NOT_ACTIVE("USER_001", "활성화된 회원이 아닙니다.", 500),
+
     // 공통
     INVALID_REQUEST("COMMON_001", "유효하지 않은 요청입니다.", 400);
     private final String code;

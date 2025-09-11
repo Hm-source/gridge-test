@@ -1,34 +1,17 @@
 package org.example.gridgestagram.repository.user;
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-import org.example.gridgestagram.repository.user.entity.QUser;
+import org.example.gridgestagram.controller.admin.dto.UserSearchCondition;
 import org.example.gridgestagram.repository.user.entity.User;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-@Repository
-@RequiredArgsConstructor
-public class UserRepositoryCustom implements IUserRepositoryCustom {
+public interface UserRepositoryCustom {
 
-    private final JPAQueryFactory jpaQueryFactory;
+    List<User> findByName(String name);
 
-    @Override
-    public List<User> findByName(String name) {
-        return jpaQueryFactory.selectFrom(QUser.user)
-            .where(QUser.user.name.trim().eq(name))
-            .fetch();
-    }
+    Optional<User> findByProviderId(String providerId);
 
-    @Override
-    public Optional<User> findByProviderId(String providerId) {
-        return Optional.ofNullable(
-            jpaQueryFactory.selectFrom(QUser.user)
-                .where((QUser.user.providerId.eq(providerId)))
-                .fetchOne()
-        );
-    }
-
-
+    Page<User> searchUsers(UserSearchCondition condition, Pageable pageable);
 }

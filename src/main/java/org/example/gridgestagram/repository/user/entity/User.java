@@ -160,4 +160,29 @@ public class User implements UserDetails {
         this.password = encodedPassword;
         this.updatedAt = LocalDateTime.now();
     }
+
+    public boolean canLogin() {
+        return status == UserStatus.ACTIVE;
+    }
+
+    public void suspend() {
+        this.status = UserStatus.SUSPENDED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void unsuspend() {
+        this.status = UserStatus.ACTIVE;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void markAsDormant() {
+        this.status = UserStatus.DORMANT;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void activateFromDormant() {
+        this.status = UserStatus.ACTIVE;
+        this.lastLoginAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 }
