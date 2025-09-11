@@ -1,5 +1,6 @@
 package org.example.gridgestagram.repository.term;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.example.gridgestagram.repository.term.entity.UserTerms;
@@ -20,4 +21,8 @@ public interface UserTermsRepository extends JpaRepository<UserTerms, Long> {
         + "AND ut.nextAgreedDate < :currentDate")
     List<UserTerms> findExpiredAgreementsByUserId(@Param("userId") Long userId,
         @Param("currentDate") LocalDateTime currentDate);
+
+    List<UserTerms> findByTermsIdAndNextAgreedDateAndIsAgreed(Long termsId,
+        LocalDate nextAgreedDate,
+        boolean isAgreed);
 }

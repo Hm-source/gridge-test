@@ -14,4 +14,6 @@ public interface TermsRepository extends JpaRepository<Terms, Long> {
     List<Terms> findAllByOrderByIsRequiredDescCreatedAtAsc();
 
     Optional<Terms> findByTitle(String title);
+
+    Optional<Terms> findByTitleContaining(String title);
 }
