@@ -102,4 +102,19 @@ public class Feed {
         this.files.add(file);
     }
 
+    public void increaseLikeCount() {
+        this.likeCount++;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void decreaseLikeCount() {
+        this.likeCount = Math.max(0, this.likeCount - 1);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public boolean isLikedBy(Long userId) {
+        return this.likes.stream()
+            .anyMatch(like -> like.getUser().getId().equals(userId));
+    }
+
 }

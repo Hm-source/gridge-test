@@ -47,8 +47,10 @@ public enum ErrorCode {
     FEED_UPDATE_FAILED("FEED_003", "피드 업데이트를 실패하였습니다.", 500),
     FEED_DELETE_FAILED("FEED_004", "피드 삭제를 실패하였습니다.", 500),
     FEED_FETCH_FAILED("FEED_005", "게시물 조회에 실패했습니다.", 500),
-    FEED_NOT_FOUND("FEED_006", "피드를 찾을 수 없습니다.", 500),
-    FEED_HIDE_FAILED("FEED_005", "피드 숨김 처리를 실패하였습니다.", 500),
+    FEED_NOT_FOUND("FEED_006", "피드를 찾을 수 없습니다.", 404),
+    FEED_HIDE_FAILED("FEED_007", "피드 숨김 처리를 실패하였습니다.", 500),
+    ALREADY_LIKED("FEED_008", "이미 좋아요를 누른 피드입니다.", 400),
+    LIKE_NOT_FOUND("FEED_009", "좋아요를 찾을 수 없습니다.", 404),
 
     // 신고 관련
     CANNOT_REPORT_OWN_FEED("REPORT_001", "본인 피드 또는 댓글은 신고할 수 없습니다.", 400),
@@ -81,6 +83,7 @@ public enum ErrorCode {
     ACCOUNT_ALREADY_WITHDRAWN("ACCOUNT_002", "이미 탈퇴한 계정입니다.", 400),
     ACCOUNT_NOT_SUSPENDED("ACCOUNT_003", "일시정지되지 않은 계정입니다.", 400),
     ACCOUNT_NOT_DORMANT("ACCOUNT_004", "휴면 계정이 아닙니다.", 400),
+
 
     USER_NOT_ACTIVE("USER_001", "활성화된 회원이 아닙니다.", 500),
 

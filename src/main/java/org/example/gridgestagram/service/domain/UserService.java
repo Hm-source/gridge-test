@@ -206,4 +206,9 @@ public class UserService implements UserDetailsService {
             throw new CustomException(ErrorCode.OAUTH2_FAILED);
         }
     }
+
+    @Transactional(readOnly = true)
+    public List<User> findUsersByIds(List<Long> userIds) {
+        return userRepository.findAllById(userIds);
+    }
 }

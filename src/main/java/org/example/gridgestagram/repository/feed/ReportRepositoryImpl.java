@@ -43,23 +43,19 @@ public class ReportRepositoryImpl implements ReportRepositoryCustom {
 
         BooleanBuilder whereClause = new BooleanBuilder();
 
-        // 1. 상태 필터링
         if (status != null) {
             whereClause.and(report.status.eq(status));
         }
 
-        // 2. 신고자 이름 필터링
         if (reporterName != null && !reporterName.isBlank()) {
             whereClause.and(report.reporter.name.containsIgnoreCase(reporterName));
         }
 
-        // 3. 작성자 이름 필터링 (게시글 또는 댓글)
         if (writerName != null && !writerName.isBlank()) {
             whereClause.and(feed.user.name.containsIgnoreCase(writerName)
                 .or(comment.user.name.containsIgnoreCase(writerName)));
         }
 
-        // 4. 날짜 범위 필터링
         if (startDate != null) {
             whereClause.and(report.createdAt.goe(LocalDateTime.of(startDate, LocalTime.MIN)));
         }
@@ -67,7 +63,6 @@ public class ReportRepositoryImpl implements ReportRepositoryCustom {
             whereClause.and(report.createdAt.loe(LocalDateTime.of(endDate, LocalTime.MAX)));
         }
 
-        // 메인 쿼리 구성
         JPQLQuery<ReportQueryDto> mainQuery = queryFactory
             .select(Projections.constructor(ReportQueryDto.class,
                 report.id,
