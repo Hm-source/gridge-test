@@ -91,7 +91,11 @@ public enum ErrorCode {
     ADMIN_FEED_SEARCH_FAILED("ADMIN_002", "관리자 피드 검색에 실패했습니다", 500),
     ADMIN_FEED_DETAIL_FAILED("ADMIN_003", "관리자 피드 상세 조회에 실패했습니다", 500),
     ADMIN_FEED_DELETE_FAILED("ADMIN_004", "관리자 피드 삭제에 실패했습니다", 500),
-    
+
+
+    LOG_SEARCH_FAILED("LOG_001", "로그 조회에 실패하였습니다.", 500),
+    RECENT_LOGS_FAILED("LOG_002", "최신 로그를 조회하는데 실패하였습니다.", 500),
+    USER_LOGS_FAILED("LOG_002", "사용자 로그를 조회하는데 실패하였습니다.", 500),
     // 공통
     INVALID_REQUEST("COMMON_001", "유효하지 않은 요청입니다.", 400);
     private final String code;
