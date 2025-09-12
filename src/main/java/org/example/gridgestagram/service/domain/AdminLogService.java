@@ -1,8 +1,6 @@
 package org.example.gridgestagram.service.domain;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.gridgestagram.controller.admin.dto.AdminLogResponse;
@@ -54,30 +52,6 @@ public class AdminLogService {
         }
     }
 
-
-    public List<AdminLogResponse> getRecentLogs(int limit) {
-        try {
-            List<AdminLog> logs = adminLogRepository.findRecentLogs(limit);
-            return logs.stream()
-                .map(AdminLogResponse::from)
-                .collect(Collectors.toList());
-        } catch (Exception e) {
-            log.error("최근 로그 조회 실패: {}", e.getMessage());
-            throw new CustomException(ErrorCode.RECENT_LOGS_FAILED);
-        }
-    }
-
-    public List<AdminLogResponse> getUserLogs(Long userId, int days, int limit) {
-        try {
-            List<AdminLog> logs = adminLogRepository.findLogsByUser(userId, days, limit);
-            return logs.stream()
-                .map(AdminLogResponse::from)
-                .collect(Collectors.toList());
-        } catch (Exception e) {
-            log.error("사용자 로그 조회 실패: userId={}", userId, e);
-            throw new CustomException(ErrorCode.USER_LOGS_FAILED);
-        }
-    }
 
     private String getUsername(Long userId) {
         if (userId == null) {

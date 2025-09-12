@@ -2,12 +2,14 @@ package org.example.gridgestagram.controller.feed;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.gridgestagram.annotation.LogAction;
 import org.example.gridgestagram.controller.feed.dto.FeedCreateRequest;
 import org.example.gridgestagram.controller.feed.dto.FeedDetailResponse;
 import org.example.gridgestagram.controller.feed.dto.FeedResponse;
 import org.example.gridgestagram.controller.feed.dto.FeedUpdateRequest;
 import org.example.gridgestagram.controller.feed.dto.ReportRequest;
 import org.example.gridgestagram.controller.feed.dto.ReportResponse;
+import org.example.gridgestagram.repository.log.entity.vo.LogType;
 import org.example.gridgestagram.service.domain.ReportService;
 import org.example.gridgestagram.service.facade.FeedFacade;
 import org.springframework.data.domain.Page;
@@ -33,12 +35,14 @@ public class FeedController {
     private final ReportService reportService;
 
     @PostMapping
+    @LogAction(value = LogType.FEED_CREATE, targetType = "FEED")
     public ResponseEntity<FeedResponse> createFeed(
         @Valid @RequestBody FeedCreateRequest request) {
         FeedResponse response = feedFacade.createFeed(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @LogAction(value = LogType.FEED_VIEW, targetType = "FEED")
     @GetMapping
     public ResponseEntity<Page<FeedResponse>> getFeeds(
         @PageableDefault(size = 10)
@@ -47,6 +51,7 @@ public class FeedController {
         return ResponseEntity.ok(response);
     }
 
+    @LogAction(value = LogType.FEED_VIEW, targetType = "FEED")
     @GetMapping("/{feedId}")
     public ResponseEntity<FeedDetailResponse> getFeed(
         @PathVariable Long feedId) {
@@ -54,6 +59,7 @@ public class FeedController {
         return ResponseEntity.ok(response);
     }
 
+    @LogAction(value = LogType.FEED_UPDATE, targetType = "FEED")
     @PutMapping("/{feedId}")
     public ResponseEntity<FeedResponse> updateFeed(
         @PathVariable Long feedId,
@@ -63,13 +69,14 @@ public class FeedController {
         return ResponseEntity.ok(response);
     }
 
+    @LogAction(value = LogType.FEED_DELETE, targetType = "FEED")
     @DeleteMapping("/{feedId}")
     public ResponseEntity<Void> deleteFeed(@PathVariable Long feedId) {
         feedFacade.deleteFeed(feedId);
         return ResponseEntity.noContent().build();
     }
 
-
+    @LogAction(value = LogType.FEED_REPORT, targetType = "FEED")
     @PostMapping("/{feedId}/reports")
     public ResponseEntity<ReportResponse> reportFeed(
         @PathVariable Long feedId,
