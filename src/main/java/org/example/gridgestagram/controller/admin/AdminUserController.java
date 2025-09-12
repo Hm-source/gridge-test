@@ -1,14 +1,16 @@
 package org.example.gridgestagram.controller.admin;
 
 import lombok.RequiredArgsConstructor;
+import org.example.gridgestagram.annotation.LogAction;
 import org.example.gridgestagram.controller.admin.dto.UserDetailResponse;
 import org.example.gridgestagram.controller.admin.dto.UserSearchCondition;
+import org.example.gridgestagram.repository.log.entity.vo.LogType;
 import org.example.gridgestagram.service.domain.AdminUserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -20,12 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@Secured("ROLE_ADMIN")
 @Validated
 public class AdminUserController {
 
     private final AdminUserService adminUserService;
 
+    @LogAction(value = LogType.ADMIN_USER_VIEW, targetType = "USER")
     @GetMapping("/search")
     public ResponseEntity<Page<UserDetailResponse>> searchUsers(
         @ModelAttribute UserSearchCondition condition,
@@ -38,6 +41,7 @@ public class AdminUserController {
         return ResponseEntity.ok(users);
     }
 
+    @LogAction(value = LogType.ADMIN_USER_VIEW, targetType = "USER")
     @GetMapping("/{userId}")
     public ResponseEntity<UserDetailResponse> getUserDetail(@PathVariable Long userId) {
         UserDetailResponse user = adminUserService.getUserDetail(userId);

@@ -1,9 +1,11 @@
 package org.example.gridgestagram.controller.admin;
 
 import lombok.RequiredArgsConstructor;
+import org.example.gridgestagram.annotation.LogAction;
 import org.example.gridgestagram.controller.admin.dto.AdminFeedDetailResponse;
 import org.example.gridgestagram.controller.admin.dto.AdminFeedResponse;
 import org.example.gridgestagram.controller.admin.dto.AdminFeedSearchCondition;
+import org.example.gridgestagram.repository.log.entity.vo.LogType;
 import org.example.gridgestagram.service.domain.AdminFeedService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,12 +24,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/feeds")
 @RequiredArgsConstructor
-
+@Secured("ROLE_ADMIN")
 public class AdminFeedController {
 
     private final AdminFeedService adminFeedService;
 
-    @Secured("ROLE_ADMIN")
+    @LogAction(value = LogType.ADMIN_FEED_VIEW, targetType = "FEED")
     @GetMapping
     public ResponseEntity<Page<AdminFeedResponse>> searchFeeds(
         @ModelAttribute AdminFeedSearchCondition condition,
@@ -37,14 +39,14 @@ public class AdminFeedController {
         return ResponseEntity.ok(result);
     }
 
-    @Secured("ROLE_ADMIN")
+    @LogAction(value = LogType.ADMIN_FEED_VIEW, targetType = "FEED")
     @GetMapping("/{feedId}")
     public ResponseEntity<AdminFeedDetailResponse> getFeedDetail(@PathVariable Long feedId) {
         AdminFeedDetailResponse response = adminFeedService.getFeedDetail(feedId);
         return ResponseEntity.ok(response);
     }
 
-    @Secured("ROLE_ADMIN")
+    @LogAction(value = LogType.ADMIN_FEED_DELETE, targetType = "FEED")
     @DeleteMapping("/{feedId}")
     public ResponseEntity<Void> deleteFeed(
         @PathVariable Long feedId,
