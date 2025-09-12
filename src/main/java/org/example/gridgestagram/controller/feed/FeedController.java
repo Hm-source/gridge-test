@@ -76,7 +76,7 @@ public class FeedController {
         return ResponseEntity.noContent().build();
     }
 
-    @LogAction(value = LogType.FEED_REPORT, targetType = "FEED")
+    @LogAction(value = LogType.REPORT_CREATE, targetType = "REPORT")
     @PostMapping("/{feedId}/reports")
     public ResponseEntity<ReportResponse> reportFeed(
         @PathVariable Long feedId,

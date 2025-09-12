@@ -2,10 +2,12 @@ package org.example.gridgestagram.controller.feed;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.gridgestagram.annotation.LogAction;
 import org.example.gridgestagram.controller.feed.dto.CommentCreateRequest;
 import org.example.gridgestagram.controller.feed.dto.CommentResponse;
 import org.example.gridgestagram.controller.feed.dto.ReportRequest;
 import org.example.gridgestagram.controller.feed.dto.ReportResponse;
+import org.example.gridgestagram.repository.log.entity.vo.LogType;
 import org.example.gridgestagram.service.domain.ReportService;
 import org.example.gridgestagram.service.facade.CommentFacade;
 import org.springframework.data.domain.Page;
@@ -30,6 +32,7 @@ public class CommentController {
     private final CommentFacade commentFacade;
     private final ReportService reportService;
 
+    @LogAction(value = LogType.COMMENT_CREATE, targetType = "COMMENT")
     @PostMapping
     public ResponseEntity<CommentResponse> createComment(
         @PathVariable Long feedId,
@@ -38,6 +41,7 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @LogAction(value = LogType.COMMENT_VIEW, targetType = "COMMENT")
     @GetMapping
     public ResponseEntity<Page<CommentResponse>> getComments(
         @PathVariable Long feedId,
@@ -48,6 +52,7 @@ public class CommentController {
         return ResponseEntity.ok(response);
     }
 
+    @LogAction(value = LogType.COMMENT_DELETE, targetType = "COMMENT")
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteComment(
         @PathVariable Long commentId, @PathVariable Long feedId) {
@@ -55,6 +60,7 @@ public class CommentController {
         return ResponseEntity.noContent().build();
     }
 
+    @LogAction(value = LogType.REPORT_CREATE, targetType = "REPORT")
     @PostMapping("/{commentId}/reports")
     public ResponseEntity<ReportResponse> reportComment(
         @PathVariable Long commentId,
