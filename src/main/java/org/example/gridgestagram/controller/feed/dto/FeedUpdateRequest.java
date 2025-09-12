@@ -10,6 +10,6 @@ import lombok.Getter;
 public class FeedUpdateRequest {
 
     @NotBlank(message = "내용은 필수입니다")
-    @Size(min = 1, max = 1000, message = "내용은 1자 이상 5000자 이하로 입력해주세요")
+    @Size(min = 1, max = 1000, message = "내용은 1자 이상 1000자 이하로 입력해주세요")
     private String content;
 }
