@@ -77,7 +77,7 @@ public class AdminLogService {
         }
         return userRepository.findById(userId)
             .map(User::getRole)
-            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+            .orElse(null);
     }
 
     @Async("logExecutor")
@@ -101,4 +101,11 @@ public class AdminLogService {
         return CompletableFuture.completedFuture(null);
     }
 
+    @Transactional
+    public void createLogUnauthenticatedUser(LogType logType, String targetType,
+        String description) {
+        AdminLog log = AdminLog.createWithTarget(logType, null, null, targetType, null,
+            description);
+        adminLogRepository.save(log);
+    }
 }

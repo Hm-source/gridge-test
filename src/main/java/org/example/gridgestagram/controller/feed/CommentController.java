@@ -41,7 +41,7 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @LogAction(value = LogType.COMMENT_VIEW, targetType = "COMMENT")
+    @LogAction(value = LogType.COMMENT_VIEW)
     @GetMapping
     public ResponseEntity<Page<CommentResponse>> getComments(
         @PathVariable Long feedId,

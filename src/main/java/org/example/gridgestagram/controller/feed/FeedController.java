@@ -42,7 +42,7 @@ public class FeedController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @LogAction(value = LogType.FEED_VIEW, targetType = "FEED")
+    @LogAction(value = LogType.FEED_VIEW)
     @GetMapping
     public ResponseEntity<Page<FeedResponse>> getFeeds(
         @PageableDefault(size = 10)

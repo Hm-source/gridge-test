@@ -8,7 +8,11 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.example.gridgestagram.repository.user.entity.User;
 import org.example.gridgestagram.service.domain.AdminLogService;
-import org.example.gridgestagram.service.domain.AuthenticationService;
+import org.example.gridgestagram.service.domain.UserService;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -19,16 +23,18 @@ import org.springframework.util.StringUtils;
 public class LoggingAspect {
 
     private final AdminLogService adminLogService;
-    private final AuthenticationService authenticationService;
+    private final UserService userService;
 
     @Around("@annotation(logAction)")
     public Object logMethodExecution(ProceedingJoinPoint joinPoint, LogAction logAction)
         throws Throwable {
 
-        User currentUser = authenticationService.getCurrentUser();
-        if (currentUser == null) {
-            return joinPoint.proceed();
-        }
+        User currentUser = getCurrentUser();
+        log.info(currentUser == null ? "null이다." : currentUser.getUsername());
+
+//        if (currentUser == null) {
+//            return joinPoint.proceed();
+//        }
 
         String methodName = joinPoint.getSignature().getName();
         Object[] args = joinPoint.getArgs();
@@ -49,8 +55,10 @@ public class LoggingAspect {
         try {
             String description = buildDescription(logAction, args);
             Long targetId = extractTargetId(args, result);
-
-            if (logAction.async()) {
+            if (user == null) {
+                adminLogService.createLogUnauthenticatedUser(logAction.value(),
+                    logAction.targetType(), description);
+            } else if (logAction.async()) {
                 adminLogService.createLogAsync(
                     logAction.value(), user, logAction.targetType(), targetId, description);
             } else {
@@ -113,6 +121,29 @@ public class LoggingAspect {
             }
         }
 
+        return null;
+    }
+
+    private User getCurrentUser() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
+
+                Object principal = authentication.getPrincipal();
+                log.info(principal.toString());
+
+                if (principal instanceof User user) {
+                    return user;
+                } else if (principal instanceof UserDetails userDetails) {
+                    return userService.findByUsername(userDetails.getUsername());
+                } else if (principal instanceof String username) {
+                    return userService.findByUsername(username);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("현재 사용자 조회 실패: {}", e.getMessage());
+        }
         return null;
     }
 }
