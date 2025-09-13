@@ -58,6 +58,7 @@ jobs:
           port: ${{ secrets.EC2_SSH_PORT }}
           timeout: 60s
           script: |
+            echo "${{ secrets.DOCKERHUB_PW }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
             sudo docker stop gridgestagram
             sudo docker rm gridgestagram
             sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/gridgestagram
