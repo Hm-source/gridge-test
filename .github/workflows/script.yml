@@ -63,7 +63,9 @@ jobs:
             sudo docker rm gridgestagram
             sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/gridgestagram
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/gridgestagram
-            sudo docker run -it -d -p 8080:8080 --name gridgestagram ${{ secrets.DOCKERHUB_USERNAME }}/gridgestagram
+            sudo docker run -it -d -p 8080:8080 \ 
+            -e SPRING_PROFILES_ACTIVE=prod \
+            --name gridgestagram ${{ secrets.DOCKERHUB_USERNAME }}/gridgestagram
 
       - name: Remove IP FROM security group
         run: |
