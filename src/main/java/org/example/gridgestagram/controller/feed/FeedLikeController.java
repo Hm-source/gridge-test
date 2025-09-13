@@ -2,9 +2,11 @@ package org.example.gridgestagram.controller.feed;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.gridgestagram.annotation.LogAction;
 import org.example.gridgestagram.controller.feed.dto.FeedLikeStatus;
 import org.example.gridgestagram.controller.feed.dto.FeedLikeUserResponse;
 import org.example.gridgestagram.controller.feed.dto.LikeToggleResponse;
+import org.example.gridgestagram.repository.log.entity.vo.LogType;
 import org.example.gridgestagram.repository.user.entity.User;
 import org.example.gridgestagram.service.domain.AuthenticationService;
 import org.example.gridgestagram.service.domain.FeedLikeService;
@@ -28,6 +30,7 @@ public class FeedLikeController {
     private final FeedLikeService feedLikeService;
     private final AuthenticationService authenticationService;
 
+    @LogAction(value = LogType.FEED_LIKE, targetType = "FEED")
     @PostMapping("/{feedId}/likes")
     public ResponseEntity<LikeToggleResponse> toggleLike(
         @PathVariable Long feedId) {
@@ -38,6 +41,7 @@ public class FeedLikeController {
         return ResponseEntity.ok(response);
     }
 
+    @LogAction(value = LogType.FEED_LIKE_VIEW, targetType = "FEED")
     @GetMapping("/{feedId}/likes/status")
     public ResponseEntity<FeedLikeStatus> getLikeStatus(
         @PathVariable Long feedId) {
@@ -48,6 +52,7 @@ public class FeedLikeController {
         return ResponseEntity.ok(status);
     }
 
+    @LogAction(value = LogType.FEED_LIKE_USERS_VIEW, targetType = "FEED")
     @GetMapping("/{feedId}/likes/users")
     public ResponseEntity<Page<FeedLikeUserResponse>> getFeedLikeUsers(
         @PathVariable Long feedId,

@@ -112,7 +112,7 @@ public class S3Facade {
         }
     }
 
-    @Async
+    @Async("fileExecutor") // 사진 삭제 로직은 넣지는 않았음.(게시물 논리삭제라서)
     public void deleteFilesFromS3Async(Feed feed) {
         List<String> fileUrls = feed.getFiles().stream()
             .map(Files::getUrl)

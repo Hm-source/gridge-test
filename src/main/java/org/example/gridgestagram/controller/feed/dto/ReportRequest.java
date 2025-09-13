@@ -10,7 +10,7 @@ import org.example.gridgestagram.repository.feed.entity.vo.ReportType;
 @AllArgsConstructor
 public class ReportRequest {
 
-    @NotNull(message = "신고 타입은 필수입니다.")  // FEED or COMMENT
+    @NotNull(message = "신고 타입은 필수입니다.")
     private ReportType type;
 
     @NotNull(message = "신고 사유는 필수입니다")

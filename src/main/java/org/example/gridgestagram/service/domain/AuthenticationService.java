@@ -17,7 +17,7 @@ public class AuthenticationService {
 
     private final UserService userService;
 
-    public User getCurrentUser() {
+    public User getCurrentUser() { // USER -> @Secured 대체 가능(간접 로그인 확인)
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {

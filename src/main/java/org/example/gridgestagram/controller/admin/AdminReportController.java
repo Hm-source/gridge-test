@@ -3,9 +3,11 @@ package org.example.gridgestagram.controller.admin;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
+import org.example.gridgestagram.annotation.LogAction;
 import org.example.gridgestagram.controller.admin.dto.ReportProcessRequest;
 import org.example.gridgestagram.controller.admin.dto.ReportQueryDto;
 import org.example.gridgestagram.repository.feed.entity.vo.ReportStatus;
+import org.example.gridgestagram.repository.log.entity.vo.LogType;
 import org.example.gridgestagram.service.domain.ReportService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,12 +28,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/reports")
 @RequiredArgsConstructor
+@Secured("ROLE_ADMIN")
 public class AdminReportController {
 
     private final ReportService reportService;
 
+    @LogAction(value = LogType.ADMIN_REPORT_VIEW, targetType = "REPORT")
     @GetMapping
-    @Secured("ROLE_ADMIN")
     public ResponseEntity<Page<ReportQueryDto>> getReports(
         @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
         @RequestParam(required = false) ReportStatus status,
@@ -45,9 +48,8 @@ public class AdminReportController {
         return ResponseEntity.ok(reports);
     }
 
-
+    @LogAction(value = LogType.ADMIN_REPORT_HANDLE, targetType = "REPORT")
     @PutMapping("/{reportId}")
-    @Secured("ROLE_ADMIN")
     public ResponseEntity<Void> processReport(
         @PathVariable Long reportId,
         @Valid @RequestBody ReportProcessRequest request) {
@@ -56,8 +58,8 @@ public class AdminReportController {
         return ResponseEntity.ok().build();
     }
 
+    @LogAction(value = LogType.ADMIN_REPORT_HANDLE, targetType = "REPORT")
     @DeleteMapping("/{reportId}")
-    @Secured("ROLE_ADMIN")
     public ResponseEntity<Void> deleteReport(
         @PathVariable Long reportId,
         @Valid @RequestBody ReportProcessRequest request) {

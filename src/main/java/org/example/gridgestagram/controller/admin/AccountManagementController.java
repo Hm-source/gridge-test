@@ -2,7 +2,9 @@ package org.example.gridgestagram.controller.admin;
 
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.example.gridgestagram.annotation.LogAction;
 import org.example.gridgestagram.controller.admin.dto.AccountActionResponse;
+import org.example.gridgestagram.repository.log.entity.vo.LogType;
 import org.example.gridgestagram.service.domain.AccountManagementService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -15,9 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/admin/accounts")
 @RequiredArgsConstructor
 @Secured("ROLE_ADMIN")
+@LogAction(value = LogType.ADMIN_USER_STATUS_CHANGE, targetType = "USER")
 public class AccountManagementController {
 
     private final AccountManagementService accountManagementService;
+
 
     @PostMapping("/{userId}/suspend")
     public ResponseEntity<AccountActionResponse> suspendAccount(
