@@ -1,0 +1,11 @@
+spring:
+  profiles:
+    active: local
+  messages:
+    basename: messages
+    encoding: UTF-8
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Seoul
+    serialization:
+      write-dates-as-timestamps: false
