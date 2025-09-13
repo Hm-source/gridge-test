@@ -25,16 +25,16 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class RedisConfig {
 
-    @Value("${spring.redis.host:localhost}")
+    @Value("${spring.redis.host}")
     private String host;
 
-    @Value("${spring.redis.port:6379}")
+    @Value("${spring.redis.port}")
     private int port;
 
-    @Value("${spring.redis.timeout:3000}")
+    @Value("${spring.redis.timeout}")
     private int timeout;
 
-    @Value("${spring.redis.password:}")
+    @Value("${spring.redis.password}")
     private String password;
 
     @Bean
