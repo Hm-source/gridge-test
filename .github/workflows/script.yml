@@ -33,3 +33,37 @@ jobs:
 
       - name: docker Hub push
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/gridgestagram
+
+      - name: get GitHub IP
+        id: ip
+        uses: haythem/public-ip@v1.2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_GITHUB_DEPLOY_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_GITHUB_DEPLOY_SECRET }}
+          aws-region: ap-northeast-2
+
+      - name: Add GitHub IP to AWS
+        run: |
+          aws ec2 authorize-security-group-ingress --group-id ${{ secrets.AWS_SG_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+
+      - name: AWS EC2 Connection
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          password: ${{ secrets.EC2_PASSWORD }}
+          port: ${{ secrets.EC2_SSH_PORT }}
+          timeout: 60s
+          script: |
+            sudo docker stop gridgestagram
+            sudo docker rm gridgestagram
+            sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/gridgestagram
+            #           sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/gridgestagram
+            sudo docker run -it -d -p 8080:8080 --name gridgestagram ${{ secrets.DOCKERHUB_USERNAME }}/gridgestagram
+
+      - name: Remove IP FROM security group
+        run: |
+          aws ec2 revoke-security-group-ingress --group-id ${{ secrets.AWS_SG_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
