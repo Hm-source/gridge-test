@@ -6,9 +6,6 @@ jwt:
     expiration: 604800  # 7일 (초)
 
 spring:
-  profiles:
-    active: prod
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}/gridgestagram?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&connectionCollation=utf8mb4_ko_0900_ai_ci&serverTimezone=Asia/Seoul
