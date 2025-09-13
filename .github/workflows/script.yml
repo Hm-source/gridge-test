@@ -65,7 +65,6 @@ jobs:
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/gridgestagram
             sudo docker run -it -d -p 8080:8080 \
               --network gridgestagram-net \
-              -e SPRING_PROFILES_ACTIVE=prod \
               --env-file .env \
               --name gridgestagram ${{ secrets.DOCKERHUB_USERNAME }}/gridgestagram
 
