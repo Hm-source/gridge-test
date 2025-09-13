@@ -1,5 +1,13 @@
 package org.example.gridgestagram.controller.feed;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.gridgestagram.controller.feed.dto.FeedLikeStatus;
@@ -19,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "피드 좋아요", description = "피드 좋아요 추가/제거, 상태 조회, 좋아요 누른 사용자 목록 관련 API")
 @RestController
 @RequestMapping("/api/feeds")
 @RequiredArgsConstructor
@@ -28,8 +37,36 @@ public class FeedLikeController {
     private final FeedLikeService feedLikeService;
     private final AuthenticationService authenticationService;
 
+    @Operation(
+        summary = "좋아요 토글",
+        description = "피드에 좋아요를 추가하거나 제거합니다. 이미 좋아요를 누른 경우 제거되고, 아니면 추가됩니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "좋아요 토글 성공",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = LikeToggleResponse.class),
+                examples = @ExampleObject(
+                    value = "{\"liked\": true, \"likeCount\": 15, \"message\": \"좋아요를 추가했습니다.\", \"timestamp\": \"2024-01-01 10:00:00\"}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "인증 실패 (로그인 필요)",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "피드를 찾을 수 없음",
+            content = @Content(mediaType = "application/json")
+        )
+    })
     @PostMapping("/{feedId}/likes")
     public ResponseEntity<LikeToggleResponse> toggleLike(
+        @Parameter(description = "좋아요를 토글할 피드 ID", example = "1")
         @PathVariable Long feedId) {
 
         User user = authenticationService.getCurrentUser();
@@ -38,8 +75,36 @@ public class FeedLikeController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+        summary = "좋아요 상태 조회",
+        description = "현재 사용자가 해당 피드에 좋아요를 눌렀는지 여부와 전체 좋아요 수를 조회합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "좋아요 상태 조회 성공",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = FeedLikeStatus.class),
+                examples = @ExampleObject(
+                    value = "{\"feedId\": 1, \"liked\": true, \"likeCount\": 25}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "인증 실패 (로그인 필요)",
+            content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "피드를 찾을 수 없음",
+            content = @Content(mediaType = "application/json")
+        )
+    })
     @GetMapping("/{feedId}/likes/status")
     public ResponseEntity<FeedLikeStatus> getLikeStatus(
+        @Parameter(description = "좋아요 상태를 조회할 피드 ID", example = "1")
         @PathVariable Long feedId) {
 
         User user = authenticationService.getCurrentUser();
@@ -48,10 +113,34 @@ public class FeedLikeController {
         return ResponseEntity.ok(status);
     }
 
+    @Operation(
+        summary = "좋아요 누른 사용자 목록 조회",
+        description = "피드에 좋아요를 누른 사용자들의 목록을 페이징으로 조회합니다. 기본 20개씩 조회됩니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "좋아요 누른 사용자 목록 조회 성공",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"content\": [{\"userId\": 2, \"username\": \"user123\", \"profileImageUrl\": \"https://example.com/profile.jpg\", \"likedAt\": \"2024-01-01 10:00:00\"}], \"pageable\": {\"pageNumber\": 0, \"pageSize\": 20}, \"totalElements\": 50}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "피드를 찾을 수 없음",
+            content = @Content(mediaType = "application/json")
+        )
+    })
     @GetMapping("/{feedId}/likes/users")
     public ResponseEntity<Page<FeedLikeUserResponse>> getFeedLikeUsers(
+        @Parameter(description = "좋아요 누른 사용자를 조회할 피드 ID", example = "1")
         @PathVariable Long feedId,
+        @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
         @RequestParam(defaultValue = "0") int page,
+        @Parameter(description = "페이지당 아이템 수", example = "20")
         @RequestParam(defaultValue = "20") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
