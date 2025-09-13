@@ -73,6 +73,13 @@ public class SecurityConfig {
             .authenticationProvider(daoAuthenticationProvider())
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers(
+                    "/swagger-ui.html",
+                    "/swagger-ui/**",
+                    "/api-docs/**",
+                    "/v3/api-docs/**",
+                    "/v3/api-docs.yaml"
+                ).permitAll()
                 .requestMatchers("/", "/login/**", "/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/signup").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
