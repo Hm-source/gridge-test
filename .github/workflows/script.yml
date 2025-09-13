@@ -66,8 +66,8 @@ jobs:
             sudo docker run -it -d -p 8080:8080 \
               --network gridgestagram-net \
               -e SPRING_PROFILES_ACTIVE=prod \
-              -e SPRING_DATA_REDIS_HOST=redis \
-              -e SPRING_DATA_REDIS_PORT=6379 \
+              -e REDIS_HOST=redis \
+              -e REDIS_PORT=6379 \
               --name gridgestagram ${{ secrets.DOCKERHUB_USERNAME }}/gridgestagram
 
       - name: Remove IP FROM security group
