@@ -61,9 +61,3 @@ cloud:
       secret-key: ${cloud.aws.credentials.secret-key}
     s3:
       bucket: ${cloud.aws.s3.bucket}
-aws:
-  paramstore:
-    enabled: true
-    prefix: /config
-    profile-separator: _
-    name: gridgestagram
