@@ -1,19 +1,19 @@
 jwt:
-  secret: ${jwt.secret}
+  secret: ${JWT_SECRET}
   token:
-    expiration: 86400  # 24시간 (초)
+    expiration: 86400   # 24시간 (초)
   refresh-token:
     expiration: 604800  # 7일 (초)
 
-
 spring:
-  config:
-    import: aws-parameterstore:/config/gridgestagram_prod/
+  profiles:
+    active: prod
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/gridgestagram?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&connectionCollation=utf8mb4_ko_0900_ai_ci&serverTimezone=Asia/Seoul
-    username: ${spring.datasource.username}
-    password: ${spring.datasource.password}
+    url: jdbc:mysql://${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}/gridgestagram?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&connectionCollation=utf8mb4_ko_0900_ai_ci&serverTimezone=Asia/Seoul
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
 
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
@@ -27,8 +27,8 @@ spring:
       client:
         registration:
           kakao:
-            client-id: ${spring.security.oauth2.client.registration.kakao.client-id}
-            client-secret: ${spring.security.oauth2.client.registration.kakao.client-secret} # 선택, 있으면 등록
+            client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_ID}
+            client-secret: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_SECRET}
             redirect-uri: "http://3.39.0.54:8080/login/oauth2/code/{registrationId}"
             authorization-grant-type: authorization_code
             client-authentication-method: client_secret_post
@@ -40,6 +40,7 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+
   cache:
     type: redis
     redis:
@@ -48,16 +49,15 @@ spring:
 
   data:
     redis:
-      host: ${spring.data.redis.host}
-      port: ${spring.data.redis.port}
-
+      host: ${SPRING_DATA_REDIS_HOST}
+      port: ${SPRING_DATA_REDIS_PORT}
 
 cloud:
   aws:
     region:
-      static: ${cloud.aws.region.static}
+      static: ${CLOUD_AWS_REGION_STATIC}
     credentials:
-      access-key: ${cloud.aws.credentials.access-key}
-      secret-key: ${cloud.aws.credentials.secret-key}
+      access-key: ${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}
+      secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
     s3:
-      bucket: ${cloud.aws.s3.bucket}
+      bucket: ${CLOUD_AWS_S3_BUCKET}
