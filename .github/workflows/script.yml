@@ -65,7 +65,7 @@ jobs:
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/gridgestagram
             sudo docker run -it -d -p 8080:8080 \
               --network gridgestagram-net \
-              --env-file .env \
+              --env-file /home/${{ secrets.EC2_USERNAME }}/.env \
               --name gridgestagram ${{ secrets.DOCKERHUB_USERNAME }}/gridgestagram
 
       - name: Remove IP FROM security group
