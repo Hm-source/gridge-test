@@ -9,9 +9,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.example.gridgestagram.annotation.LogAction;
 import org.example.gridgestagram.controller.admin.dto.AdminFeedDetailResponse;
 import org.example.gridgestagram.controller.admin.dto.AdminFeedResponse;
 import org.example.gridgestagram.controller.admin.dto.AdminFeedSearchCondition;
+import org.example.gridgestagram.repository.log.entity.vo.LogType;
 import org.example.gridgestagram.service.domain.AdminFeedService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -57,6 +59,7 @@ public class AdminFeedController {
         )
     })
     @Secured("ROLE_ADMIN")
+    @LogAction(value = LogType.ADMIN_FEED_VIEW, targetType = "FEED")
     @GetMapping
     public ResponseEntity<Page<AdminFeedResponse>> searchFeeds(
         @Parameter(description = "검색 조건 (사용자명, 상태, 기간 등)")
@@ -96,6 +99,7 @@ public class AdminFeedController {
         )
     })
     @Secured("ROLE_ADMIN")
+    @LogAction(value = LogType.ADMIN_FEED_VIEW, targetType = "FEED")
     @GetMapping("/{feedId}")
     public ResponseEntity<AdminFeedDetailResponse> getFeedDetail(
         @Parameter(description = "상세 조회할 피드 ID", example = "1")
@@ -125,6 +129,7 @@ public class AdminFeedController {
         )
     })
     @Secured("ROLE_ADMIN")
+    @LogAction(value = LogType.ADMIN_FEED_DELETE, targetType = "FEED")
     @DeleteMapping("/{feedId}")
     public ResponseEntity<Void> deleteFeed(
         @Parameter(description = "삭제할 피드 ID", example = "1")

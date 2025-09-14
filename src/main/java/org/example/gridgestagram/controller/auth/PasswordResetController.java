@@ -10,10 +10,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.gridgestagram.annotation.LogAction;
 import org.example.gridgestagram.controller.auth.dto.NewPasswordRequest;
 import org.example.gridgestagram.controller.auth.dto.PasswordResetRequest;
 import org.example.gridgestagram.controller.auth.dto.VerificationRequest;
 import org.example.gridgestagram.controller.auth.dto.VerificationResponse;
+import org.example.gridgestagram.repository.log.entity.vo.LogType;
 import org.example.gridgestagram.service.domain.PasswordResetService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -56,6 +58,7 @@ public class PasswordResetController {
             content = @Content(mediaType = "application/json")
         )
     })
+    @LogAction(value = LogType.USER_PASSWORD_CHANGE_REQUEST, targetType = "USER")
     @PostMapping("/reset/request")
     public ResponseEntity<String> requestPasswordReset(
         @Valid @RequestBody PasswordResetRequest request) {
@@ -95,6 +98,7 @@ public class PasswordResetController {
             content = @Content(mediaType = "application/json")
         )
     })
+    @LogAction(value = LogType.USER_VERIFY, targetType = "USER")
     @PostMapping("/reset/verify")
     public ResponseEntity<VerificationResponse> verifyCode(
         @Valid @RequestBody VerificationRequest request) {
@@ -131,6 +135,7 @@ public class PasswordResetController {
             content = @Content(mediaType = "application/json")
         )
     })
+    @LogAction(value = LogType.USER_PASSWORD_CHANGE, targetType = "USER")
     @PostMapping("/reset/complete")
     public ResponseEntity<String> resetPassword(@Valid @RequestBody NewPasswordRequest request) {
         passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
@@ -163,6 +168,7 @@ public class PasswordResetController {
             content = @Content(mediaType = "application/json")
         )
     })
+    @LogAction(value = LogType.USER_VERIFY_RESEND, targetType = "USER")
     @PostMapping("/reset/resend")
     public ResponseEntity<String> resendVerificationCode(
         @Parameter(description = "비밀번호 재설정 토큰", example = "eyJhbGciOiJIUzI1NiJ9...")

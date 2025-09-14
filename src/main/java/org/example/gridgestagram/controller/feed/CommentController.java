@@ -10,10 +10,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.gridgestagram.annotation.LogAction;
 import org.example.gridgestagram.controller.feed.dto.CommentCreateRequest;
 import org.example.gridgestagram.controller.feed.dto.CommentResponse;
 import org.example.gridgestagram.controller.feed.dto.ReportRequest;
 import org.example.gridgestagram.controller.feed.dto.ReportResponse;
+import org.example.gridgestagram.repository.log.entity.vo.LogType;
 import org.example.gridgestagram.service.domain.ReportService;
 import org.example.gridgestagram.service.facade.CommentFacade;
 import org.springframework.data.domain.Page;
@@ -71,6 +73,7 @@ public class CommentController {
             content = @Content(mediaType = "application/json")
         )
     })
+    @LogAction(value = LogType.COMMENT_CREATE, targetType = "COMMENT")
     @PostMapping
     public ResponseEntity<CommentResponse> createComment(
         @Parameter(description = "댓글을 작성할 피드 ID", example = "1")
@@ -101,6 +104,7 @@ public class CommentController {
             content = @Content(mediaType = "application/json")
         )
     })
+    @LogAction(value = LogType.COMMENT_VIEW)
     @GetMapping
     public ResponseEntity<Page<CommentResponse>> getComments(
         @Parameter(description = "댓글을 조회할 피드 ID", example = "1")
@@ -133,6 +137,7 @@ public class CommentController {
             content = @Content(mediaType = "application/json")
         )
     })
+    @LogAction(value = LogType.COMMENT_DELETE, targetType = "COMMENT")
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteComment(
         @Parameter(description = "삭제할 댓글 ID", example = "1")
@@ -175,6 +180,7 @@ public class CommentController {
             content = @Content(mediaType = "application/json")
         )
     })
+    @LogAction(value = LogType.REPORT_CREATE, targetType = "REPORT")
     @PostMapping("/{commentId}/reports")
     public ResponseEntity<ReportResponse> reportComment(
         @Parameter(description = "신고할 댓글 ID", example = "1")

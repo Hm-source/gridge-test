@@ -9,14 +9,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.example.gridgestagram.annotation.LogAction;
 import org.example.gridgestagram.controller.admin.dto.UserDetailResponse;
 import org.example.gridgestagram.controller.admin.dto.UserSearchCondition;
+import org.example.gridgestagram.repository.log.entity.vo.LogType;
 import org.example.gridgestagram.service.domain.AdminUserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -29,11 +31,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@Secured("ROLE_ADMIN")
 @Validated
 public class AdminUserController {
 
     private final AdminUserService adminUserService;
+
 
     @Operation(
         summary = "사용자 검색",
@@ -56,6 +59,7 @@ public class AdminUserController {
             content = @Content(mediaType = "application/json")
         )
     })
+    @LogAction(value = LogType.ADMIN_USER_VIEW, targetType = "USER")
     @GetMapping("/search")
     public ResponseEntity<Page<UserDetailResponse>> searchUsers(
         @Parameter(description = "검색 조건 (사용자명, 사용자 아이디, 상태, 기간 등)")
@@ -70,7 +74,7 @@ public class AdminUserController {
 
         return ResponseEntity.ok(users);
     }
-
+  
     @Operation(
         summary = "사용자 상세 조회",
         description = "관리자가 특정 사용자의 상세 정보를 조회합니다."
@@ -98,6 +102,7 @@ public class AdminUserController {
             content = @Content(mediaType = "application/json")
         )
     })
+    @LogAction(value = LogType.ADMIN_USER_VIEW, targetType = "USER")
     @GetMapping("/{userId}")
     public ResponseEntity<UserDetailResponse> getUserDetail(
         @Parameter(description = "상세 조회할 사용자 ID", example = "1")

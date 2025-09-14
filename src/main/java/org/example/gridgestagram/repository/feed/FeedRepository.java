@@ -22,7 +22,5 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, AdminFeedRepo
     @Query("SELECT f FROM Feed f WHERE f.id = :id AND f.status = 'ACTIVE'")
     Optional<Feed> findByIdAndStatusActive(Long id);
 
-    Page<Feed> findAll(Pageable pageable);
-
     Optional<Feed> findByIdAndUserId(Long feedId, Long userId);
 }

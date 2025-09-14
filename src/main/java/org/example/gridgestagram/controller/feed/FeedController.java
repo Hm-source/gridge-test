@@ -10,12 +10,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.gridgestagram.annotation.LogAction;
 import org.example.gridgestagram.controller.feed.dto.FeedCreateRequest;
 import org.example.gridgestagram.controller.feed.dto.FeedDetailResponse;
 import org.example.gridgestagram.controller.feed.dto.FeedResponse;
 import org.example.gridgestagram.controller.feed.dto.FeedUpdateRequest;
 import org.example.gridgestagram.controller.feed.dto.ReportRequest;
 import org.example.gridgestagram.controller.feed.dto.ReportResponse;
+import org.example.gridgestagram.repository.log.entity.vo.LogType;
 import org.example.gridgestagram.service.domain.ReportService;
 import org.example.gridgestagram.service.facade.FeedFacade;
 import org.springframework.data.domain.Page;
@@ -69,6 +71,7 @@ public class FeedController {
         )
     })
     @PostMapping
+    @LogAction(value = LogType.FEED_CREATE, targetType = "FEED")
     public ResponseEntity<FeedResponse> createFeed(
         @Valid @RequestBody FeedCreateRequest request) {
         FeedResponse response = feedFacade.createFeed(request);
@@ -91,6 +94,7 @@ public class FeedController {
             )
         )
     })
+    @LogAction(value = LogType.FEED_VIEW)
     @GetMapping
     public ResponseEntity<Page<FeedResponse>> getFeeds(
         @Parameter(description = "페이지 정보 (기본 10개씩)")
@@ -122,6 +126,7 @@ public class FeedController {
             content = @Content(mediaType = "application/json")
         )
     })
+    @LogAction(value = LogType.FEED_VIEW, targetType = "FEED")
     @GetMapping("/{feedId}")
     public ResponseEntity<FeedDetailResponse> getFeed(
         @Parameter(description = "조회할 피드 ID", example = "1")
@@ -159,6 +164,7 @@ public class FeedController {
             content = @Content(mediaType = "application/json")
         )
     })
+    @LogAction(value = LogType.FEED_UPDATE, targetType = "FEED")
     @PutMapping("/{feedId}")
     public ResponseEntity<FeedResponse> updateFeed(
         @Parameter(description = "수정할 피드 ID", example = "1")
@@ -189,6 +195,7 @@ public class FeedController {
             content = @Content(mediaType = "application/json")
         )
     })
+    @LogAction(value = LogType.FEED_DELETE, targetType = "FEED")
     @DeleteMapping("/{feedId}")
     public ResponseEntity<Void> deleteFeed(
         @Parameter(description = "삭제할 피드 ID", example = "1")
@@ -230,6 +237,7 @@ public class FeedController {
             content = @Content(mediaType = "application/json")
         )
     })
+    @LogAction(value = LogType.REPORT_CREATE, targetType = "REPORT")
     @PostMapping("/{feedId}/reports")
     public ResponseEntity<ReportResponse> reportFeed(
         @Parameter(description = "신고할 피드 ID", example = "1")
