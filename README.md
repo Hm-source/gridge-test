@@ -73,6 +73,13 @@ src/main/java/org/example/gridgestagram/
 │   └── facade/                            # 파사드 패턴 서비스
 └── utils/                                 # 유틸리티 클래스
 ```
+## erd
+<img width="4020" height="1682" alt="gridge-test (2)" src="https://github.com/user-attachments/assets/e51d54ef-cb8e-4ee0-add6-b8028e54334b" />
+
+## system archictecture
+<img width="1140" height="641" alt="gridgestagram architecture drawio (4)" src="https://github.com/user-attachments/assets/d5264490-0877-4982-be92-85e05d5a9d74" />
+
+
 
 ## 주요 기능
 
@@ -102,6 +109,7 @@ POST /api/auth/oauth/signup
 - `CustomOAuth2UserService`: 카카오에서 받은 사용자 정보를 처리하고 신규/기존 사용자 판별
 - `OAuth2AuthenticationSuccessHandler`: 인증 성공 후 적절한 페이지로 리다이렉트
 - 신규 사용자: 회원가입 페이지로 리다이렉트 (사용자 정보 Base64 인코딩하여 전달)
+   - 신규 사용자는 providerId+username 기준으로 한다. (회원가입 시 email 정보를 받지 않아 providerId로 대체함)
 - 기존 사용자: JWT 토큰 발급 후 메인 페이지로 리다이렉트
 
 #### 3. JWT 토큰 관리
