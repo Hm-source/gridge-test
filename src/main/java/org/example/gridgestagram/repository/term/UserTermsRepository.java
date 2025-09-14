@@ -17,11 +17,6 @@ public interface UserTermsRepository extends JpaRepository<UserTerms, Long> {
         + "AND ut.nextAgreedDate < :currentDate")
     List<UserTerms> findExpiredAgreements(@Param("currentDate") LocalDateTime currentDate);
 
-    @Query("SELECT ut FROM UserTerms ut WHERE ut.user.id = :userId AND ut.isAgreed = true "
-        + "AND ut.nextAgreedDate < :currentDate")
-    List<UserTerms> findExpiredAgreementsByUserId(@Param("userId") Long userId,
-        @Param("currentDate") LocalDateTime currentDate);
-
     List<UserTerms> findByTermsIdAndNextAgreedDateAndIsAgreed(Long termsId,
         LocalDate nextAgreedDate,
         boolean isAgreed);

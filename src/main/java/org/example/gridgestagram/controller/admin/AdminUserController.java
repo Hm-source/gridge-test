@@ -60,7 +60,7 @@ public class AdminUserController {
         )
     })
     @LogAction(value = LogType.ADMIN_USER_VIEW, targetType = "USER")
-    @GetMapping("/search")
+    @GetMapping("")
     public ResponseEntity<Page<UserDetailResponse>> searchUsers(
         @Parameter(description = "검색 조건 (사용자명, 사용자 아이디, 상태, 기간 등)")
         @ModelAttribute UserSearchCondition condition,
@@ -74,7 +74,7 @@ public class AdminUserController {
 
         return ResponseEntity.ok(users);
     }
-  
+
     @Operation(
         summary = "사용자 상세 조회",
         description = "관리자가 특정 사용자의 상세 정보를 조회합니다."
