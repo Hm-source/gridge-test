@@ -31,13 +31,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        // 인증 불필요한 경로는 JWT 검사 건너뛰기
         if (path.startsWith("/api/auth/") || path.startsWith("/api/public/")) {
             log.info("JwtAuthenticationFilter invoked for path: {}", path);
 
             filterChain.doFilter(request, response);
             return;
         }
+
+        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || path.equals(
+            "/swagger-ui.html")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = resolveTokenFromHeader(request);
         log.info("Token: {}", token);
 
@@ -76,5 +82,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(BEARER_PREFIX.length());
         }
         return null;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/swagger-ui")
+            || path.startsWith("/api-docs")
+            || path.equals("/swagger-ui.html")
+            || path.startsWith("/api/public/");
     }
 }
