@@ -506,10 +506,7 @@ UserSearchCondition condition = UserSearchCondition.builder()
     .build();
 ```
 
-### 기타 주요 기능
-
-- **결제 시스템**: 구독 서비스 결제 및 이력 관리
-- **스케줄링**: 휴면 계정 처리, 약관 갱신 알림 등 배치 작업 자동화
+### 기타
 - **API 문서화**: Swagger를 통한 실시간 API 문서 및 테스트 환경
 
 ## 설정 파일
