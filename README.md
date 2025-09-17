@@ -1,82 +1,117 @@
 # Gridgestagram
-
-Instagram 클론 프로젝트 - Spring Boot 기반의 소셜 미디어 플랫폼
-
-## 프로젝트 개요
-
+- Spring Boot 기반의 소셜 미디어 플랫폼
 - **프로젝트명**: gridgestagram
 - **Java 버전**: 17
 - **Spring Boot 버전**: 3.5.5
 - **빌드 도구**: Gradle
 
-## 기술 스택
+# 기술 스택 & 아키텍처
 
-| 카테고리 | 기술 | 설명 | 선택 이유                                                                              |
-|---------|------|------|------------------------------------------------------------------------------------|
-| **프레임워크** | Spring Boot 3.5.5 | 메인 애플리케이션 프레임워크 | 소셜 미디어의 복잡한 비즈니스 로직과 다양한 API 엔드포인트를 효율적으로 관리하며, 자동 설정과 내장 서버로 빠른 개발과 배포가 가능        |
-| **보안** | Spring Security | 인증/인가 관리 | 사용자 계정, 개인정보, 콘텐츠 보호가 핵심인 소셜 플랫폼에서 OAuth2, JWT 토큰 인증, 역할 기반 권한 관리를 통합적으로 제공        |
-| **데이터베이스** | MySQL | 메인 데이터베이스 | 사용자, 피드, 팔로우 관계 등 복잡한 관계형 데이터 구조를 안정적으로 처리하며, 트랜잭션 일관성과 ACID 속성을 보장하여 데이터 무결성 확보   |
-| **ORM** | Spring Data JPA | 객체-관계 매핑 | 복잡한 엔티티 관계(User-Feed-Subscription 등)를 객체 지향적으로 관리하고, 반복적인 CRUD 작업을 자동화하여 개발 생산성 향상 |
-| **쿼리** | QueryDSL | 타입 안전한 쿼리 작성 | 피드 검색, 사용자 필터링, 구독 이력 조회 등 복잡한 동적 쿼리를 컴파일 시점에 검증하여 런타임 오류를 방지하고 유지보수성 향상           |
-| **인증** | JWT | 토큰 기반 인증 시스템 | Stateless 인증을 지원하며, 확장성이 뛰어나고 서버 부하를 줄이면서 사용자 세션을 안전하게 관리        |
-| **캐싱** | Redis | 캐싱 및 세션 관리 | 피드 좋아요 데이터를 메모리에 캐싱하여 응답 속도를 개선하고, 데이터베이스 부하를 줄여 처리 능력 향상                          |
-| **파일 저장소** | AWS S3 | 이미지/동영상 파일 저장 | Instagram과 같은 미디어 중심 플랫폼에서 대용량 이미지/동영상 파일을 안정적으로 저장 가능                             |
-| **설정 관리** | AWS Parameter Store | 환경별 설정 관리 | 개발/스테이징/프로덕션 환경별 데이터베이스 연결 정보, API 키 등 민감한 설정을 안전하게 중앙 관리하고 암호화된 상태로 저장            |
-| **컨테이너** | Docker | 애플리케이션 컨테이너화 | 개발 환경과 프로덕션 환경의 일관성을 보장하고, 마이크로서비스 아키텍처로의 확장과 CI/CD 파이프라인 구축을 위한 기반 제공             |
-| **API 문서** | Swagger | REST API 문서화 | 프론트엔드 팀과의 협업 효율성을 높이고, API 명세를 자동으로 생성하여 개발 속도를 향상시키며 API 테스트 환경 제공                |
-| **코드 생성** | Lombok | 보일러플레이트 코드 자동 생성 | Entity, DTO 클래스의 getter/setter, builder 패턴 등 반복적인 코드를 자동 생성하여 코드 가독성을 높이고 개발 시간 단축 |
-| **빌드 도구** | Gradle | 의존성 관리 및 빌드 | Maven보다 빠른 빌드 속도와 유연한 설정을 제공하며, 멀티 모듈 프로젝트 관리와 다양한 플러그인을 통한 확장성 제공                 |
-| **언어** | Java 17 | 프로그래밍 언어 | LTS 버전으로 안정성을 보장                                             |
+## 핵심 기술 스택
+
+### **백엔드 프레임워크**
+- **Java 17** - LTS 버전으로 안정성과 보안 업데이트 보장
+- **Spring Boot 3.5.5** - 자동 설정과 내장 서버로 복잡한 소셜 미디어 비즈니스 로직을 빠르게 구현
+- **Spring Security** - 사용자 인증부터 콘텐츠 권한 관리까지 소셜 플랫폼 보안 요구사항을 통합 지원
+- **Spring Data JPA** - 사용자-피드-구독 간 복잡한 엔티티 관계를 객체 지향적으로 관리
+
+### **데이터베이스 & 저장소**
+- **MySQL** - 사용자 관계와 피드 데이터의 복잡한 관계형 구조를 ACID 보장하며 안정적으로 처리
+- **Redis** - 좋아요 카운트와 리프레시 토큰을 메모리에서 고속 처리하여 사용자 경험 향상
+- **AWS S3** - 인스타그램 스타일의 대용량 미디어 파일을 무제한 확장 가능하게 저장
+
+### **개발 도구 & 라이브러리**
+- **QueryDSL** - 피드 검색과 사용자 필터링 등 복잡한 동적 쿼리를 컴파일 시점에 검증
+- **JWT** - 확장성을 위한 무상태 인증으로 서버 부하 최소화
+- **Lombok** - 엔티티와 DTO의 반복적인 getter/setter 코드를 자동 생성하여 개발 속도 향상
+- **Gradle** - Maven 대비 빠른 빌드와 멀티 모듈 프로젝트 관리의 유연성 제공
+
+### **운영 & 배포**
+- **Docker** - 개발/프로덕션 환경 일관성 보장과 마이크로서비스 확장 기반 마련
+- **AWS Parameter Store** - 데이터베이스 연결 정보와 API 키를 암호화하여 중앙 집중 관리
+- **Swagger** - 프론트엔드 팀과의 협업 효율성을 위한 실시간 API 명세 및 테스트 환경 제공
+
+---
 
 ## 프로젝트 구조
 
 ```
 src/main/java/org/example/gridgestagram/
-├── GridgestagramApplication.java          # 메인 애플리케이션 클래스
-├── annotation/                            # 커스텀 어노테이션
-│   ├── LogAction.java                     # 로그 액션 어노테이션
-│   └── LoggingAspect.java                 # AOP 로깅 관점
-├── config/                                # 설정 클래스들
-│   ├── AsyncConfig.java                   # 비동기 처리 설정
-│   ├── CacheConfig.java                   # 캐시 설정
-│   ├── CorsConfig.java                    # CORS 설정
-│   ├── JacksonDateTimeConfig.java         # 날짜/시간 직렬화 설정
-│   ├── PasswordEncoderConfig.java         # 비밀번호 암호화 설정
-│   ├── QuerydslConfig.java                # QueryDSL 설정
-│   ├── RedisConfig.java                   # Redis 설정
-│   ├── S3Config.java                      # AWS S3 설정
-│   ├── SchedulingConfig.java              # 스케줄링 설정
-│   ├── SecurityConfig.java                # Spring Security 설정
-│   ├── SwaggerConfig.java                 # API 문서화 설정
-│   └── WebConfig.java                     # 웹 관련 설정
-├── controller/                            # REST API 컨트롤러
-│   ├── admin/                             # 관리자 기능
-│   ├── auth/                              # 인증 관련
-│   ├── feed/                              # 피드 관련
-│   ├── file/                              # 파일 관련
-│   ├── subscription/                      # 구독 관련
-│   └── user/                              # 사용자 관련
-├── data/                                  # 데이터 관련 클래스
-├── exceptions/                            # 커스텀 예외 클래스
-├── repository/                            # 데이터 접근 계층
-│   ├── feed/                              # 피드 리포지토리
-│   ├── files/                             # 파일 리포지토리
-│   ├── log/                               # 로그 리포지토리
-│   ├── payment/                           # 결제 리포지토리
-│   ├── refreshToken/                      # 리프레시 토큰 리포지토리
-│   ├── subscription/                      # 구독 리포지토리
-│   ├── term/                              # 약관 리포지토리
-│   └── user/                              # 사용자 리포지토리
-├── security/                              # 보안 관련 클래스
-├── service/                               # 비즈니스 로직 계층
-│   ├── domain/                            # 도메인 서비스
-│   └── facade/                            # 파사드 패턴 서비스
-└── utils/                                 # 유틸리티 클래스
+├── 📄 GridgestagramApplication.java       # 애플리케이션 진입점
+│
+├── 🏷️ annotation/                         # 커스텀 어노테이션
+│   ├── LogAction.java                    # 로그 액션 마킹
+│   └── LoggingAspect.java                # AOP 로깅 구현
+│
+├── ⚙️ config/                            # 시스템 설정
+│   ├── AsyncConfig.java                  # 비동기 처리
+│   ├── CacheConfig.java                  # 캐시 전략
+│   ├── SecurityConfig.java               # 보안 정책
+│   ├── RedisConfig.java                  # Redis 연결
+│   ├── S3Config.java                     # AWS S3 설정
+│   └── SwaggerConfig.java                # API 문서화
+│
+├── 🌐 controller/                        # REST API 엔드포인트
+│   ├── auth/                             # 로그인, 회원가입
+│   ├── user/                             # 사용자 프로필 관리
+│   ├── feed/                             # 피드 CRUD 및 좋아요
+│   ├── subscription/                     # 구독 관리
+│   ├── file/                             # 파일 업로드/다운로드
+│   └── admin/                            # 관리자 기능
+│
+├── 🗃️ repository/                        # 데이터 액세스 계층
+│   ├── user/                             # 사용자 데이터
+│   ├── feed/                             # 피드 데이터
+│   ├── subscription/                     # 구독 관계
+│   ├── files/                            # 파일 메타데이터
+│   └── log/                              # 시스템 로그
+│
+├── 🔧 service/                           # 비즈니스 로직
+│   ├── domain/                           # 핵심 도메인 서비스
+│   └── facade/                           # 복합 서비스 조합
+│
+├── 🔐 security/                          # 보안 구현체
+├── ❌ exceptions/                        # 예외 처리
+├── 📊 data/                              # 데이터 전송 객체
+└── 🛠️ utils/                            # 공통 유틸리티
 ```
-## erd
+
+---
+
+## 아키텍처 패턴 & 설계 철학
+
+### **도메인 중심 설계 (DDD)**
+비즈니스 도메인을 중심으로 코드를 구성하여 복잡한 소셜 미디어 로직을 직관적으로 이해할 수 있도록 설계했습니다. 사용자, 피드 등 각 도메인이 명확히 분리되어 유지보수와 확장이 용이합니다.
+
+### **헥사고날 아키텍처 (Ports & Adapters)**
+비즈니스 로직을 외부 의존성(데이터베이스, 외부 API)으로부터 완전히 분리했습니다. 이를 통해 데이터베이스나 파일 저장소를 변경하더라도 핵심 비즈니스 로직은 영향받지 않아 테스트와 확장성이 크게 향상됩니다.
+
+### **파사드 패턴 (Facade Pattern)**
+여러 도메인 서비스를 조합하는 복잡한 비즈니스 플로우를 파사드로 단순화했습니다. 예를 들어, 피드 생성 시 이미지 업로드, 메타데이터 저장, 알림 발송 등의 과정을 하나의 파사드로 통합하여 클라이언트가 쉽게 사용할 수 있도록 구성했습니다.
+
+### **관리자 기능**
+소셜 플랫폼 운영에 필수적인 관리자 기능을 체계적으로 구현했습니다:
+
+- 사용자 관리: 회원 정보 조회, 계정 상태 관리, 신고 처리
+- 콘텐츠 모니터링: 부적절한 피드 검토 및 제재, 대량 콘텐츠 관리
+- 시스템 모니터링: 서비스 상태 확인, 로그 분석, 성능 지표 추적
+- 권한 분리: 관리자, 유저 역할을 명확히 구분하여 보안성과 운영 효율성 확보
+
+### **성능 중심 캐싱 전략**
+소셜 미디어의 특성상 좋아요와 인증 토큰은 매우 빈번하게 접근됩니다:
+- **좋아요 캐싱**: 실시간 카운트 업데이트를 위해 Redis에서 고속 처리
+- **리프레시 토큰 관리**: 사용자 세션의 빠른 검증과 갱신을 위해 메모리 기반 저장
+
+### **확장성과 보안의 균형**
+- **무상태 JWT 인증**: 서버 확장 시 세션 동기화 부담 없이 수평 확장 가능
+
+---
+
+
+## ERD
 <img width="4020" height="1682" alt="gridge-test (2)" src="https://github.com/user-attachments/assets/e51d54ef-cb8e-4ee0-add6-b8028e54334b" />
 
-## system archictecture
+## System Architecture
 <img width="1140" height="641" alt="gridgestagram architecture drawio (4)" src="https://github.com/user-attachments/assets/d5264490-0877-4982-be92-85e05d5a9d74" />
 
 
