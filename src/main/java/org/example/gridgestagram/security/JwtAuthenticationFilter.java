@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.gridgestagram.service.domain.TokenBlacklistService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.Authentication;
@@ -24,43 +25,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final TokenBlacklistService tokenBlacklistService;
 
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
-        String path = request.getRequestURI();
-
-        if (path.startsWith("/api/auth/") || path.startsWith("/api/public/")) {
-            log.info("JwtAuthenticationFilter invoked for path: {}", path);
-
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || path.equals(
-            "/swagger-ui.html")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         String token = resolveTokenFromHeader(request);
         log.info("Token: {}", token);
 
         if (StringUtils.hasText(token)) {
             try {
-                // 1. 미인증 JwtAuthenticationToken 생성
+                if (tokenBlacklistService.isAccessTokenBlacklisted(token)) {
+                    log.warn("Access token is blacklisted, rejecting request");
+                    SecurityContextHolder.clearContext();
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 JwtAuthenticationToken jwtAuthenticationToken = new JwtAuthenticationToken(token);
 
-                // 2. AuthenticationManager에게 인증 위임
                 AuthenticationManager authenticationManager =
                     authenticationConfiguration.getAuthenticationManager();
-                log.info("authenticationManager: {}", authenticationManager.getClass());
-                log.info("jwtAuthenticationToken class: {}", jwtAuthenticationToken.getClass());
                 Authentication authentication = authenticationManager.authenticate(
                     jwtAuthenticationToken);
 
-                // 3. SecurityContext에 인증 정보 저장
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
                 log.info("JWT authentication successful for user: {}", authentication.getName());
@@ -88,6 +77,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
         return path.startsWith("/swagger-ui")
+            || path.startsWith("/api/auth/")
             || path.startsWith("/api-docs")
             || path.equals("/swagger-ui.html")
             || path.startsWith("/api/public/");
