@@ -21,8 +21,18 @@ public class RateLimiterService {
         String key = RATE_LIMIT_PREFIX + action + ":" + identifier;
 
         try {
-            String currentCountStr = (String) redisTemplate.opsForValue().get(key);
-            int currentCount = currentCountStr != null ? Integer.parseInt(currentCountStr) : 0;
+            Object value = redisTemplate.opsForValue().get(key);
+
+            int currentCount = 0;
+            if (value != null) {
+                try {
+                    currentCount = Integer.parseInt(value.toString());
+                } catch (NumberFormatException e) {
+                    log.error("잘못된 값이 Redis에 저장됨 - key: {}, value: {}", key, value);
+                    redisTemplate.delete(key); // 잘못된 값이면 초기화
+                    currentCount = 0;
+                }
+            }
 
             if (currentCount >= maxRequests) {
                 log.warn("Rate limit exceeded for identifier: {}, action: {}, current count: {}",
@@ -31,7 +41,7 @@ public class RateLimiterService {
             }
 
             if (currentCount == 0) {
-                redisTemplate.opsForValue().set(key, "1", window.getSeconds(), TimeUnit.SECONDS);
+                redisTemplate.opsForValue().set(key, 1, window.getSeconds(), TimeUnit.SECONDS);
             } else {
                 redisTemplate.opsForValue().increment(key);
             }
