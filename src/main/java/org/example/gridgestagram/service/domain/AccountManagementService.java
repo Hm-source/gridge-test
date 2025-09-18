@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class AccountManagementService {
 
     private final UserRepository userRepository;
+    private final RefreshTokenService refreshTokenService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Transactional
     public void suspendAccount(Long userId) {
@@ -27,7 +29,7 @@ public class AccountManagementService {
 
         user.suspend();
         userRepository.save(user);
-
+        refreshTokenService.blacklistAllUserTokens(userId, 24 * 30);
         log.info("계정 일시정지 처리 완료 - 사용자: {}", user.getUsername());
     }
 
@@ -41,7 +43,7 @@ public class AccountManagementService {
 
         user.unsuspend();
         userRepository.save(user);
-
+        tokenBlacklistService.removeUserBlacklist(userId);
         log.info("계정 일시정지 해제 완료 - 사용자: {}", user.getUsername());
     }
 
