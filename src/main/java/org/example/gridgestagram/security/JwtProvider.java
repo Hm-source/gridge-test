@@ -11,7 +11,6 @@ import java.util.Date;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
-import org.example.gridgestagram.repository.user.entity.vo.Role;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -45,7 +44,6 @@ public class JwtProvider implements InitializingBean {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // Access Token 생성
     public String generateAccessToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
@@ -65,7 +63,6 @@ public class JwtProvider implements InitializingBean {
             .compact();
     }
 
-    // Refresh Token 생성
     public String generateRefreshToken(String username) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + (refreshTokenExpiration * 1000));
@@ -78,40 +75,14 @@ public class JwtProvider implements InitializingBean {
             .compact();
     }
 
-    public String createAccessToken(Long userId, Role role) {
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() + (accessTokenExpiration * 1000));
-
-        return Jwts.builder()
-            .subject(String.valueOf(userId))
-            .claim(USER_ID_KEY, userId)
-            .claim(AUTHORITIES_KEY, "ROLE_" + role.name())
-            .issuedAt(now)
-            .expiration(expiry)
-            .signWith(key)
-            .compact();
-    }
-
-    // User ID 기반 Refresh Token 생성
-    public String createRefreshToken(Long userId) {
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() + (refreshTokenExpiration * 1000));
-
-        return Jwts.builder()
-            .subject(String.valueOf(userId))
-            .claim(USER_ID_KEY, userId)
-            .issuedAt(now)
-            .expiration(expiry)
-            .signWith(key)
-            .compact();
-    }
-
-    // 토큰에서 사용자명 추출
     public String getUsernameFromToken(String token) {
         return getClaimsFromToken(token).getSubject();
     }
 
-    // 토큰 검증
+    public Date getExpiration(String token) {
+        return getClaimsFromToken(token).getExpiration();
+    }
+
     public boolean validateToken(String token) {
         try {
             getClaimsFromToken(token);
@@ -130,7 +101,6 @@ public class JwtProvider implements InitializingBean {
         return false;
     }
 
-    // Claims 추출
     private Claims getClaimsFromToken(String token) {
         return Jwts.parser()
             .verifyWith(key)

@@ -25,16 +25,16 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class RedisConfig {
 
-    @Value("${spring.redis.host:localhost}")
+    @Value("${spring.data.redis.host}")
     private String host;
 
-    @Value("${spring.redis.port:6379}")
+    @Value("${spring.data.redis.port}")
     private int port;
 
-    @Value("${spring.redis.timeout:3000}")
+    @Value("${spring.data.redis.timeout}")
     private int timeout;
 
-    @Value("${spring.redis.password:}")
+    @Value("${spring.data.redis.password}")
     private String password;
 
     @Bean
@@ -62,12 +62,10 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
 
-        // ObjectMapper 설정 (Java 8 날짜/시간 지원)
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        // GenericJackson2JsonRedisSerializer 사용
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(
             objectMapper);
 

@@ -2,6 +2,10 @@ package org.example.gridgestagram.security;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.gridgestagram.exceptions.CustomException;
+import org.example.gridgestagram.exceptions.ErrorCode;
+import org.example.gridgestagram.repository.user.entity.User;
+import org.example.gridgestagram.repository.user.entity.vo.UserStatus;
 import org.example.gridgestagram.service.domain.UserService;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -29,21 +33,21 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         }
 
         try {
-            // 1. JWT 토큰 검증
             if (!jwtProvider.validateToken(token)) {
                 throw new BadCredentialsException("Invalid JWT token");
             }
 
-            // 2. JWT에서 사용자명 추출
             String username = jwtProvider.getUsernameFromToken(token);
             if (username == null || username.trim().isEmpty()) {
                 throw new BadCredentialsException("JWT subject is missing");
             }
 
-            // 3. UserDetails 조회
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-            // 4. 인증된 토큰 반환
+            if (userDetails instanceof User user) {
+                if (user.getStatus() != UserStatus.ACTIVE) {
+                    throw new CustomException(ErrorCode.USER_NOT_ACTIVE);
+                }
+            }
             return new JwtAuthenticationToken(username, userDetails.getAuthorities());
 
         } catch (Exception e) {

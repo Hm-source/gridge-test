@@ -1,5 +1,6 @@
 package org.example.gridgestagram.service.facade;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import org.example.gridgestagram.repository.user.entity.User;
 import org.example.gridgestagram.repository.user.entity.vo.UserStatus;
 import org.example.gridgestagram.security.JwtProvider;
 import org.example.gridgestagram.service.domain.RefreshTokenService;
+import org.example.gridgestagram.service.domain.TokenBlacklistService;
 import org.example.gridgestagram.service.domain.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,6 +30,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -39,6 +42,8 @@ public class AuthFacade {
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final RefreshTokenService refreshTokenService;
+    private final TokenBlacklistService tokenBlacklistService;
+
     @Value("${jwt.token.expiration}")
     private long accessTokenExpiration;
 
@@ -70,6 +75,8 @@ public class AuthFacade {
         String accessToken = jwtProvider.generateAccessToken(authentication);
         String refreshToken = jwtProvider.generateRefreshToken(user.getUsername());
 
+        refreshTokenService.store(user.getId(), refreshToken);
+
         return LoginResponse.builder()
             .accessToken(accessToken)
             .refreshToken(refreshToken)
@@ -90,6 +97,10 @@ public class AuthFacade {
         String username = jwtProvider.getUsernameFromToken(refreshToken);
         User user = userService.findByUsername(username);
 
+        if (!refreshTokenService.validate(user.getId(), refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
         Authentication authentication = new UsernamePasswordAuthenticationToken(
             user, null, user.getAuthorities()
         );
@@ -105,7 +116,7 @@ public class AuthFacade {
     }
 
     @Transactional
-    public void logout() {
+    public void logout(HttpServletRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()
@@ -120,6 +131,8 @@ public class AuthFacade {
             username = user.getUsername();
         } else if (authentication.getPrincipal() instanceof UserDetails userDetails) {
             username = userDetails.getUsername();
+        } else if (authentication.getPrincipal() instanceof String name) {
+            username = name;
         } else {
             log.warn("로그아웃 실패 - 알 수 없는 Principal 타입: {}",
                 authentication.getPrincipal().getClass());
@@ -129,8 +142,21 @@ public class AuthFacade {
         User user = userService.findByUsername(username);
         refreshTokenService.deleteByUserId(user.getId());
 
-        // 선택사항: SecurityContext 클리어 (보통 Spring Security가 자동으로 처리)
+        String accessToken = resolveTokenFromHeader(request);
+        log.info("AccessToken in logout: {}", accessToken);
+        if (StringUtils.hasText(accessToken)) {
+            tokenBlacklistService.blacklistTokenWithRemainingTime(accessToken);
+        }
+
         SecurityContextHolder.clearContext();
+    }
+
+    private String resolveTokenFromHeader(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 
     @Transactional
@@ -138,14 +164,12 @@ public class AuthFacade {
         SignUpResponse signUpResponse = userService.saveOAuth2User(request);
 
         User user = userService.findById(signUpResponse.getId());
-        // 토큰 생성
         Authentication auth = new UsernamePasswordAuthenticationToken(
             user, null, user.getAuthorities()
         );
         String accessToken = jwtProvider.generateAccessToken(auth);
         String refreshToken = jwtProvider.generateRefreshToken(user.getUsername());
 
-        // RefreshToken 저장
         refreshTokenService.store(user.getId(), refreshToken);
 
         return OAuth2SignUpResponse.builder()
