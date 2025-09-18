@@ -18,6 +18,7 @@ import org.example.gridgestagram.repository.log.entity.vo.LogType;
 import org.example.gridgestagram.repository.user.entity.User;
 import org.example.gridgestagram.service.domain.AuthenticationService;
 import org.example.gridgestagram.service.domain.FeedLikeService;
+import org.example.gridgestagram.service.domain.RateLimiterService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +39,7 @@ public class FeedLikeController {
 
     private final FeedLikeService feedLikeService;
     private final AuthenticationService authenticationService;
+    private final RateLimiterService rateLimiterService;
 
     @Operation(
         summary = "좋아요 토글",
@@ -64,6 +66,16 @@ public class FeedLikeController {
             responseCode = "404",
             description = "피드를 찾을 수 없음",
             content = @Content(mediaType = "application/json")
+        ),
+        @ApiResponse(
+            responseCode = "429",
+            description = "요청 제한 초과 (Rate Limiting)",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"message\": \"요청이 너무 많습니다. 잠시 후 다시 시도해주세요.\", \"timestamp\": \"2024-01-01T10:00:00\"}"
+                )
+            )
         )
     })
     @LogAction(value = LogType.FEED_LIKE, targetType = "FEED")
