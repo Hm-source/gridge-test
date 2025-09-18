@@ -26,9 +26,14 @@ public class FeedLikeService {
     private final UserService userService;
     private final FeedCacheService feedCacheService;
     private final RedisLikeFacade redisLikeFacade;
+    private final RateLimiterService rateLimiterService;
 
     @Transactional
     public LikeToggleResponse toggleLike(Long feedId, Long userId) {
+        if (!rateLimiterService.isLikeToggleAllowed(userId)
+            || !rateLimiterService.isFeedLikeAllowed(userId, feedId)) {
+            throw new CustomException(ErrorCode.TOO_MANY_REQUESTS);
+        }
         if (!feedCacheService.feedExists(feedId)) {
             throw new CustomException(ErrorCode.FEED_NOT_FOUND);
         }

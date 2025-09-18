@@ -101,7 +101,10 @@ public enum ErrorCode {
     INVALID_REQUEST("COMMON_001", "유효하지 않은 요청입니다.", 400),
     TOKEN_BLACKLISTED("COMMON_002", "차단된 토큰입니다.", 401),
     USER_TOKENS_BLACKLISTED("COMMON_003", "사용자의 모든 토큰이 무효화되었습니다. 다시 로그인해주세요.", 401),
-    INVALID_REFRESH_TOKEN("COMMON_004", "유효하지 않은 리프레시 토큰입니다.", 401);
+    INVALID_REFRESH_TOKEN("COMMON_004", "유효하지 않은 리프레시 토큰입니다.", 401),
+
+    // Rate Limiting
+    TOO_MANY_REQUESTS("RATE_001", "요청이 너무 많습니다. 잠시 후 다시 시도해주세요.", 429);
     private final String code;
     private final String message;
     private final int status;
