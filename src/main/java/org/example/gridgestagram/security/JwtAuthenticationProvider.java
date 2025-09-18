@@ -2,6 +2,10 @@ package org.example.gridgestagram.security;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.gridgestagram.exceptions.CustomException;
+import org.example.gridgestagram.exceptions.ErrorCode;
+import org.example.gridgestagram.repository.user.entity.User;
+import org.example.gridgestagram.repository.user.entity.vo.UserStatus;
 import org.example.gridgestagram.service.domain.UserService;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -39,6 +43,11 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
             }
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if (userDetails instanceof User user) {
+                if (user.getStatus() != UserStatus.ACTIVE) {
+                    throw new CustomException(ErrorCode.USER_NOT_ACTIVE);
+                }
+            }
             return new JwtAuthenticationToken(username, userDetails.getAuthorities());
 
         } catch (Exception e) {
