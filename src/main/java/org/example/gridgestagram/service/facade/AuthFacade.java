@@ -129,6 +129,8 @@ public class AuthFacade {
             username = user.getUsername();
         } else if (authentication.getPrincipal() instanceof UserDetails userDetails) {
             username = userDetails.getUsername();
+        } else if (authentication.getPrincipal() instanceof String name) {
+            username = name;
         } else {
             log.warn("로그아웃 실패 - 알 수 없는 Principal 타입: {}",
                 authentication.getPrincipal().getClass());
@@ -139,6 +141,7 @@ public class AuthFacade {
         refreshTokenService.deleteByUserId(user.getId());
 
         String accessToken = resolveTokenFromHeader(request);
+        log.info("AccessToken in logout: {}", accessToken);
         if (StringUtils.hasText(accessToken)) {
             tokenBlacklistService.blacklistTokenWithRemainingTime(accessToken, false);
         }
