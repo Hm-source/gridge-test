@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -232,8 +233,8 @@ public class AuthController {
     })
     @LogAction(value = LogType.USER_LOGOUT, targetType = "USER")
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, String>> logout() {
-        authFacade.logout();
+    public ResponseEntity<Map<String, String>> logout(HttpServletRequest request) {
+        authFacade.logout(request);
         return ResponseEntity.ok(Map.of(
             "message", "로그아웃이 완료되었습니다.",
             "timestamp", LocalDateTime.now().toString()
