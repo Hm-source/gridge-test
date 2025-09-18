@@ -62,12 +62,10 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
 
-        // ObjectMapper 설정 (Java 8 날짜/시간 지원)
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        // GenericJackson2JsonRedisSerializer 사용
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(
             objectMapper);
 
