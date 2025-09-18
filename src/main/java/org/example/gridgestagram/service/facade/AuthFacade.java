@@ -90,6 +90,10 @@ public class AuthFacade {
         String username = jwtProvider.getUsernameFromToken(refreshToken);
         User user = userService.findByUsername(username);
 
+        if (!refreshTokenService.validate(user.getId(), refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
         Authentication authentication = new UsernamePasswordAuthenticationToken(
             user, null, user.getAuthorities()
         );
