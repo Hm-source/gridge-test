@@ -27,12 +27,6 @@ public class TokenBlacklistService {
         log.info("Access token added to blacklist with expiration: {} seconds", expirationTime);
     }
 
-    public void blacklistRefreshToken(String token, long expirationTime) {
-        String key = BLACKLIST_REFRESH_TOKEN_PREFIX + token;
-        redisTemplate.opsForValue().set(key, "blacklisted", expirationTime, TimeUnit.SECONDS);
-        log.info("Refresh token added to blacklist with expiration: {} seconds", expirationTime);
-    }
-
     public void blacklistUserTokens(Long userId, int durationHours) {
         String key = BLACKLIST_USER_PREFIX + userId;
         long expirationTime = Duration.ofHours(durationHours).getSeconds();
@@ -50,23 +44,13 @@ public class TokenBlacklistService {
         return Boolean.TRUE.equals(exists);
     }
 
-    public boolean isRefreshTokenBlacklisted(String token) {
-        if (token == null || token.isEmpty()) {
-            return false;
-        }
-
-        String key = BLACKLIST_REFRESH_TOKEN_PREFIX + token;
-        Boolean exists = redisTemplate.hasKey(key);
-        return Boolean.TRUE.equals(exists);
-    }
-
     public boolean isUserTokensBlacklisted(Long userId) {
         String key = BLACKLIST_USER_PREFIX + userId;
         Boolean exists = redisTemplate.hasKey(key);
         return Boolean.TRUE.equals(exists);
     }
 
-    public void blacklistTokenWithRemainingTime(String token, boolean isRefreshToken) {
+    public void blacklistTokenWithRemainingTime(String token) {
         try {
             if (!jwtProvider.validateToken(token)) {
                 log.warn(
@@ -77,11 +61,7 @@ public class TokenBlacklistService {
             long remainingTimeSeconds = getRemainingTokenTime(token);
 
             if (remainingTimeSeconds > 0) {
-                if (isRefreshToken) {
-                    blacklistRefreshToken(token, remainingTimeSeconds);
-                } else {
-                    blacklistAccessToken(token, remainingTimeSeconds);
-                }
+                blacklistAccessToken(token, remainingTimeSeconds);
             } else {
                 log.info("Token already expired, no need to blacklist");
             }

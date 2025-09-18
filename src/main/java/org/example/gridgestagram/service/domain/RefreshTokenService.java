@@ -19,10 +19,6 @@ public class RefreshTokenService {
     }
 
     public boolean validate(Long userId, String refreshToken) {
-        if (tokenBlacklistService.isRefreshTokenBlacklisted(refreshToken)) {
-            log.warn("Refresh token is blacklisted for user: {}", userId);
-            return false;
-        }
         if (tokenBlacklistService.isUserTokensBlacklisted(userId)) {
             log.warn("All tokens are blacklisted for user: {}", userId);
             return false;
@@ -33,9 +29,6 @@ public class RefreshTokenService {
     }
 
     public void deleteByUserId(Long userId) {
-        refreshTokenRepository.findByUserId(userId).ifPresent(token -> {
-            tokenBlacklistService.blacklistTokenWithRemainingTime(token, true);
-        });
         refreshTokenRepository.deleteByUserId(userId);
         log.info("Refresh token deleted and blacklisted for user: {}", userId);
     }

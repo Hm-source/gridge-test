@@ -76,7 +76,7 @@ public class AuthFacade {
         String refreshToken = jwtProvider.generateRefreshToken(user.getUsername());
 
         refreshTokenService.store(user.getId(), refreshToken);
-        
+
         return LoginResponse.builder()
             .accessToken(accessToken)
             .refreshToken(refreshToken)
@@ -145,7 +145,7 @@ public class AuthFacade {
         String accessToken = resolveTokenFromHeader(request);
         log.info("AccessToken in logout: {}", accessToken);
         if (StringUtils.hasText(accessToken)) {
-            tokenBlacklistService.blacklistTokenWithRemainingTime(accessToken, false);
+            tokenBlacklistService.blacklistTokenWithRemainingTime(accessToken);
         }
 
         SecurityContextHolder.clearContext();
