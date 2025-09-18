@@ -29,21 +29,16 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         }
 
         try {
-            // 1. JWT 토큰 검증
             if (!jwtProvider.validateToken(token)) {
                 throw new BadCredentialsException("Invalid JWT token");
             }
 
-            // 2. JWT에서 사용자명 추출
             String username = jwtProvider.getUsernameFromToken(token);
             if (username == null || username.trim().isEmpty()) {
                 throw new BadCredentialsException("JWT subject is missing");
             }
 
-            // 3. UserDetails 조회
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-            // 4. 인증된 토큰 반환
             return new JwtAuthenticationToken(username, userDetails.getAuthorities());
 
         } catch (Exception e) {
