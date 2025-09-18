@@ -75,6 +75,8 @@ public class AuthFacade {
         String accessToken = jwtProvider.generateAccessToken(authentication);
         String refreshToken = jwtProvider.generateRefreshToken(user.getUsername());
 
+        refreshTokenService.store(user.getId(), refreshToken);
+        
         return LoginResponse.builder()
             .accessToken(accessToken)
             .refreshToken(refreshToken)
