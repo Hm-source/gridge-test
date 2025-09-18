@@ -80,8 +80,7 @@ public class SecurityConfig {
                     "/v3/api-docs/**",
                     "/v3/api-docs.yaml"
                 ).permitAll()
-                .requestMatchers("/", "/login/**", "/oauth2/**", "/login/oauth2/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/auth/signup").permitAll()
+                .requestMatchers("/api/auth/logout").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/error").permitAll()
