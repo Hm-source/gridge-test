@@ -6,11 +6,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.gridgestagram.controller.feed.dto.FeedLikeStatus;
 import org.example.gridgestagram.controller.feed.dto.LikeToggleResponse;
+import org.example.gridgestagram.controller.feed.dto.UserProjection;
 import org.example.gridgestagram.controller.user.dto.UserSimpleResponse;
 import org.example.gridgestagram.exceptions.CustomException;
 import org.example.gridgestagram.exceptions.ErrorCode;
 import org.example.gridgestagram.repository.feed.FeedLikeRepository;
-import org.example.gridgestagram.repository.feed.entity.FeedLike;
 import org.example.gridgestagram.repository.user.entity.User;
 import org.example.gridgestagram.service.facade.RedisLikeFacade;
 import org.springframework.stereotype.Service;
@@ -54,18 +54,29 @@ public class FeedLikeService {
             .build();
     }
 
-    @Transactional(readOnly = true)
     public List<UserSimpleResponse> getFeedLikeUsers(Long feedId) {
-        List<FeedLike> result = new ArrayList<>();
-        User user = authenticationService.getCurrentUser();
-        feedLikeRepository.findByFeedIdAndUserId(feedId, user.getId())
-            .ifPresent(result::add);
+        User currentUser = authenticationService.getCurrentUser();
+        List<UserSimpleResponse> result = new ArrayList<>();
 
-        List<FeedLike> sampleLikes = feedLikeRepository.findRandomLikes(feedId, 100);
-        result.addAll(sampleLikes);
+        boolean currentUserLiked = feedLikeRepository.existsByFeedIdAndUserId(feedId,
+            currentUser.getId());
+        if (currentUserLiked) {
+            result.add(UserSimpleResponse.from(currentUser));
+        }
 
-        return result.stream()
-            .map(like -> UserSimpleResponse.from(like.getUser()))
+        int remainingLimit = currentUserLiked ? 99 : 100;
+        List<UserProjection> projections = feedLikeRepository.findRandomLikeUsersNative(feedId,
+            remainingLimit);
+
+        return projections.stream()
+            .map(proj -> UserSimpleResponse.builder()
+                .id(proj.getId())
+                .username(proj.getUsername())
+                .name(proj.getName())
+                .profileImageUrl(proj.getProfileImageUrl())
+                .role(proj.getRole())
+                .subscriptionStatus(proj.getSubscriptionStatus())
+                .build())
             .toList();
     }
 }
