@@ -42,4 +42,23 @@ public class FeedDetailResponse {
             .build();
     }
 
+    public static FeedDetailResponse from(Feed feed, Integer likeCount) {
+        List<FileResponse> files = feed.getFiles().stream()
+            .map(FileResponse::from)
+            .sorted(Comparator.comparing(FileResponse::getOrder))
+            .toList();
+
+        return FeedDetailResponse.builder()
+            .id(feed.getId())
+            .content(feed.getContent())
+            .status(feed.getStatus())
+            .likeCount(likeCount)
+            .commentCount(feed.getCommentCount())
+            .user(UserSimpleResponse.from(feed.getUser()))
+            .files(files)
+            .createdAt(feed.getCreatedAt())
+            .updatedAt(feed.getUpdatedAt())
+            .build();
+    }
+
 }
