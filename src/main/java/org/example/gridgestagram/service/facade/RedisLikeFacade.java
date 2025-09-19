@@ -2,21 +2,16 @@ package org.example.gridgestagram.service.facade;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.gridgestagram.controller.feed.dto.FeedLikeUserInfo;
 import org.example.gridgestagram.controller.feed.dto.LikeToggleResponse;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -80,7 +75,6 @@ public class RedisLikeFacade {
     private LikeToggleResponse removeLike(Long feedId, Long userId, String likeCountKey,
         String likeUsersKey, String userLikedKey) {
 
-        // Redis Transaction 사용
         stringRedisTemplate.execute(new SessionCallback<List<Object>>() {
             @Override
             public List<Object> execute(RedisOperations operations) throws DataAccessException {
@@ -118,24 +112,6 @@ public class RedisLikeFacade {
         String likeUsersKey = String.format(FEED_LIKE_USERS_KEY, feedId);
         return Boolean.TRUE.equals(
             stringRedisTemplate.opsForSet().isMember(likeUsersKey, userId.toString()));
-    }
-
-    public List<FeedLikeUserInfo> getFeedLikeUsers(Long feedId, int offset, int limit) {
-        String likeUsersZSetKey = String.format(FEED_LIKE_USERS_KEY, feedId);
-
-        Set<ZSetOperations.TypedTuple<String>> usersWithScores = stringRedisTemplate.opsForZSet()
-            .reverseRangeWithScores(likeUsersZSetKey, offset, offset + limit - 1);
-
-        if (usersWithScores == null || usersWithScores.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return usersWithScores.stream()
-            .map(tuple -> FeedLikeUserInfo.builder()
-                .userId(Long.parseLong(Objects.requireNonNull(tuple.getValue())))
-                .likedTimestamp(Objects.requireNonNull(tuple.getScore()).longValue())
-                .build())
-            .toList();
     }
 
     private void addToSyncQueue(Long feedId, Long userId, String action) {

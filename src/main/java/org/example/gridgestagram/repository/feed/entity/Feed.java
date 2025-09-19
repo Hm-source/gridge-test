@@ -42,9 +42,7 @@ public class Feed {
     private User user;
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
-    //    @Default
-//    @Column(name = "is_visible", nullable = false)
-//    private Boolean isVisible = true;
+
     @Default
     @Column(name = "like_count", nullable = false)
     private Integer likeCount = 0;
@@ -84,7 +82,7 @@ public class Feed {
     @Default
     @OneToMany(mappedBy = "feed", cascade = {CascadeType.PERSIST,
         CascadeType.REMOVE}, orphanRemoval = true)
-    private List<Likes> likes = new ArrayList<>();
+    private List<FeedLike> likes = new ArrayList<>();
 
     public static Feed create(User user, String content) {
         return Feed.builder()
@@ -165,7 +163,7 @@ public class Feed {
             this.deletedBy = null;
         }
     }
-    
+
     public boolean isDeleted() {
         return this.status.isDeleted();
     }
