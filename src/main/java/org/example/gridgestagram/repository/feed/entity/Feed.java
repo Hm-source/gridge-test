@@ -79,10 +79,6 @@ public class Feed {
         CascadeType.REMOVE}, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
-    @Default
-    @OneToMany(mappedBy = "feed", cascade = {CascadeType.PERSIST,
-        CascadeType.REMOVE}, orphanRemoval = true)
-    private List<FeedLike> likes = new ArrayList<>();
 
     public static Feed create(User user, String content) {
         return Feed.builder()
@@ -108,27 +104,16 @@ public class Feed {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void updateLikeCount(Integer likeCount) {
+        this.likeCount = likeCount;
+    }
+
     public void incrementCommentCount() {
         this.commentCount++;
     }
 
     public void addFile(Files file) {
         this.files.add(file);
-    }
-
-    public void increaseLikeCount() {
-        this.likeCount++;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void decreaseLikeCount() {
-        this.likeCount = Math.max(0, this.likeCount - 1);
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public boolean isLikedBy(Long userId) {
-        return this.likes.stream()
-            .anyMatch(like -> like.getUser().getId().equals(userId));
     }
 
     public void deleteByUser() {
@@ -143,29 +128,6 @@ public class Feed {
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = "ADMIN";
         this.updatedAt = LocalDateTime.now();
-    }
-
-    public void markAsReported() {
-        this.status = FeedStatus.REPORTED;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void updateStatus(FeedStatus newStatus) {
-        this.status = newStatus;
-        this.updatedAt = LocalDateTime.now();
-
-        if (newStatus.isDeleted()) {
-            this.deletedAt = LocalDateTime.now();
-            this.deletedBy = "ADMIN";
-        } else if (newStatus == FeedStatus.ACTIVE) {
-            // 복구하는 경우
-            this.deletedAt = null;
-            this.deletedBy = null;
-        }
-    }
-
-    public boolean isDeleted() {
-        return this.status.isDeleted();
     }
 
     public boolean isActive() {
