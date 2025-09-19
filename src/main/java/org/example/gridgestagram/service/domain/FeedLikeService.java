@@ -29,8 +29,7 @@ public class FeedLikeService {
 
     @Transactional
     public LikeToggleResponse toggleLike(Long feedId, Long userId) {
-        if (!rateLimiterService.isLikeToggleAllowed(userId)
-            || !rateLimiterService.isFeedLikeAllowed(userId, feedId)) {
+        if (!rateLimiterService.isFeedLikeAllowed(userId, feedId)) {
             throw new CustomException(ErrorCode.TOO_MANY_REQUESTS);
         }
         if (!feedCacheService.feedExists(feedId)) {

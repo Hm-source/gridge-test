@@ -29,7 +29,7 @@ public class RateLimiterService {
                     currentCount = Integer.parseInt(value.toString());
                 } catch (NumberFormatException e) {
                     log.error("잘못된 값이 Redis에 저장됨 - key: {}, value: {}", key, value);
-                    redisTemplate.delete(key); // 잘못된 값이면 초기화
+                    redisTemplate.delete(key);
                     currentCount = 0;
                 }
             }
@@ -60,11 +60,6 @@ public class RateLimiterService {
     public boolean isFeedLikeAllowed(Long userId, Long feedId) {
         String identifier = userId + ":" + feedId;
         return isAllowed(identifier, LIKE_TOGGLE_PREFIX + "feed", 3, Duration.ofSeconds(1));
-    }
-
-    public boolean isLikeToggleAllowed(Long userId) {
-        return isAllowed(userId.toString(), LIKE_TOGGLE_PREFIX + "feed-global", 5,
-            Duration.ofSeconds(3));
     }
 
 }
