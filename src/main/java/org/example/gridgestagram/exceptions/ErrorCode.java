@@ -51,6 +51,7 @@ public enum ErrorCode {
     FEED_HIDE_FAILED("FEED_007", "피드 숨김 처리를 실패하였습니다.", 500),
     ALREADY_LIKED("FEED_008", "이미 좋아요를 누른 피드입니다.", 400),
     LIKE_NOT_FOUND("FEED_009", "좋아요를 찾을 수 없습니다.", 404),
+    LIKE_REDIS_TRANSACTION_FAILED("FEED_010", "Redis 트랜잭션 처리에 실패했습니다.", 500),
 
     // 신고 관련
     CANNOT_REPORT_OWN_FEED("REPORT_001", "본인 피드 또는 댓글은 신고할 수 없습니다.", 400),
