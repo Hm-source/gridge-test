@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.gridgestagram.controller.feed.dto.LikePair;
+import org.example.gridgestagram.controller.feed.dto.LikePairProjection;
 import org.example.gridgestagram.repository.feed.FeedLikeRepository;
 import org.example.gridgestagram.repository.feed.entity.FeedLike;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -86,11 +86,11 @@ public class LikeSyncScheduler {
         List<Long> feedIds = addActions.stream().map(a -> a.feedId).collect(Collectors.toList());
         List<Long> userIds = addActions.stream().map(a -> a.userId).collect(Collectors.toList());
 
-        List<LikePair> pairs = feedLikeRepository.findExistingPairs(feedIds, userIds);
+        List<LikePairProjection> pairs = feedLikeRepository.findExistingPairs(feedIds, userIds);
         Set<String> existingPairs = Optional.ofNullable(pairs)
             .orElse(Collections.emptyList())
             .stream()
-            .map(pair -> pair.feedId() + "_" + pair.userId())
+            .map(pair -> pair.getFeedId() + "_" + pair.getUserId())
             .collect(Collectors.toSet());
 
         List<FeedLike> newLikes = addActions.stream()

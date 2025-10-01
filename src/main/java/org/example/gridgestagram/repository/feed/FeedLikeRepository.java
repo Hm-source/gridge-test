@@ -1,7 +1,7 @@
 package org.example.gridgestagram.repository.feed;
 
 import java.util.List;
-import org.example.gridgestagram.controller.feed.dto.LikePair;
+import org.example.gridgestagram.controller.feed.dto.LikePairProjection;
 import org.example.gridgestagram.controller.feed.dto.UserProjection;
 import org.example.gridgestagram.repository.feed.entity.FeedLike;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,9 +27,9 @@ public interface FeedLikeRepository extends JpaRepository<FeedLike, Long> {
     List<UserProjection> findRandomLikeUsersNative(@Param("feedId") Long feedId,
         @Param("limit") int limit);
 
-    @Query("SELECT (fl.feedId, fl.userId) " +
+    @Query("SELECT fl.feedId as feedId, fl.userId as userId " +
         "FROM FeedLike fl WHERE fl.feedId IN :feedIds AND fl.userId IN :userIds")
-    List<LikePair> findExistingPairs(@Param("feedIds") List<Long> feedIds,
+    List<LikePairProjection> findExistingPairs(@Param("feedIds") List<Long> feedIds,
         @Param("userIds") List<Long> userIds);
 
     @Modifying
