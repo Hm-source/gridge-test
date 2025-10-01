@@ -19,7 +19,6 @@ import org.example.gridgestagram.repository.log.entity.vo.LogType;
 import org.example.gridgestagram.repository.user.entity.User;
 import org.example.gridgestagram.service.domain.AuthenticationService;
 import org.example.gridgestagram.service.domain.FeedLikeService;
-import org.example.gridgestagram.service.domain.RateLimiterService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,7 +35,6 @@ public class FeedLikeController {
 
     private final FeedLikeService feedLikeService;
     private final AuthenticationService authenticationService;
-    private final RateLimiterService rateLimiterService;
 
     @Operation(
         summary = "좋아요 토글",
