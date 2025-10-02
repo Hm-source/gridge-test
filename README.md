@@ -1,4 +1,7 @@
 # Gridgestagram
+
+[**wiki에 프로젝트 내용을 정리하였습니다**](https://github.com/Hm-source/gridgestagram/wiki)
+
 - Spring Boot 기반의 소셜 미디어 플랫폼
 - **프로젝트명**: gridgestagram
 - **Java 버전**: 17
