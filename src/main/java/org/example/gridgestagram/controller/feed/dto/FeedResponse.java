@@ -71,4 +71,13 @@ public class FeedResponse {
             .recentComments(recentComments != null ? recentComments : Collections.emptyList())
             .build();
     }
+
+    public static FeedResponse fromWithCommentsAndLikes(Feed feed,
+        List<CommentResponse> recentComments, Integer likeCount) {
+        FeedResponse response = from(feed);
+        return response.toBuilder()
+            .recentComments(recentComments != null ? recentComments : Collections.emptyList())
+            .likeCount(likeCount)
+            .build();
+    }
 }

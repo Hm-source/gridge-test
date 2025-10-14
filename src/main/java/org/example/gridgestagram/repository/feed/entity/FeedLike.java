@@ -2,12 +2,9 @@ package org.example.gridgestagram.repository.feed.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -17,7 +14,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.gridgestagram.repository.user.entity.User;
 
 @Entity
 @Table(name = "feed_like",
@@ -32,21 +28,19 @@ public class FeedLike {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "feed_id", nullable = false)
-    private Feed feed;
+    @Column(name = "feed_id", nullable = false)
+    private Long feedId;  // 엔티티 대신 ID만
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;  // 엔티티 대신 ID만
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    public static FeedLike create(Feed feed, User user) {
+    public static FeedLike create(Long feedId, Long userId) {
         return FeedLike.builder()
-            .feed(feed)
-            .user(user)
+            .feedId(feedId)
+            .userId(userId)
             .createdAt(LocalDateTime.now())
             .build();
     }

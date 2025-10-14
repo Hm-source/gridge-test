@@ -1,20 +1,18 @@
 package org.example.gridgestagram.service.domain;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.gridgestagram.controller.feed.dto.FeedLikeStatus;
-import org.example.gridgestagram.controller.feed.dto.FeedLikeUserInfo;
-import org.example.gridgestagram.controller.feed.dto.FeedLikeUserResponse;
 import org.example.gridgestagram.controller.feed.dto.LikeToggleResponse;
+import org.example.gridgestagram.controller.feed.dto.UserProjection;
+import org.example.gridgestagram.controller.user.dto.UserSimpleResponse;
 import org.example.gridgestagram.exceptions.CustomException;
 import org.example.gridgestagram.exceptions.ErrorCode;
+import org.example.gridgestagram.repository.feed.FeedLikeRepository;
 import org.example.gridgestagram.repository.user.entity.User;
 import org.example.gridgestagram.service.facade.RedisLikeFacade;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,12 +21,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class FeedLikeService {
 
-    private final UserService userService;
     private final FeedCacheService feedCacheService;
     private final RedisLikeFacade redisLikeFacade;
+    private final RateLimiterService rateLimiterService;
+    private final FeedLikeRepository feedLikeRepository;
+    private final AuthenticationService authenticationService;
 
     @Transactional
     public LikeToggleResponse toggleLike(Long feedId, Long userId) {
+        if (!rateLimiterService.isFeedLikeAllowed(userId, feedId)) {
+            throw new CustomException(ErrorCode.TOO_MANY_REQUESTS);
+        }
         if (!feedCacheService.feedExists(feedId)) {
             throw new CustomException(ErrorCode.FEED_NOT_FOUND);
         }
@@ -51,41 +54,29 @@ public class FeedLikeService {
             .build();
     }
 
-    @Transactional
-    public Page<FeedLikeUserResponse> getFeedLikeUsers(Long feedId, Pageable pageable) {
-        if (!feedCacheService.feedExists(feedId)) {
-            throw new CustomException(ErrorCode.FEED_NOT_FOUND);
+    public List<UserSimpleResponse> getFeedLikeUsers(Long feedId) {
+        User currentUser = authenticationService.getCurrentUser();
+        List<UserSimpleResponse> result = new ArrayList<>();
+
+        boolean currentUserLiked = feedLikeRepository.existsByFeedIdAndUserId(feedId,
+            currentUser.getId());
+        if (currentUserLiked) {
+            result.add(UserSimpleResponse.from(currentUser));
         }
 
-        int offset = (int) pageable.getOffset();
-        int limit = pageable.getPageSize();
+        int remainingLimit = currentUserLiked ? 99 : 100;
+        List<UserProjection> projections = feedLikeRepository.findRandomLikeUsersNative(feedId,
+            remainingLimit);
 
-        List<FeedLikeUserInfo> userInfos = redisLikeFacade.getFeedLikeUsers(feedId, offset,
-            limit);
-
-        if (userInfos.isEmpty()) {
-            return Page.empty(pageable);
-        }
-
-        List<Long> userIds = userInfos.stream()
-            .map(FeedLikeUserInfo::getUserId)
-            .toList();
-
-        if (userIds.isEmpty()) {
-            return Page.empty(pageable);
-        }
-
-        List<User> users = userService.findUsersByIds(userIds);
-        List<FeedLikeUserResponse> responses = users.stream()
-            .map(user -> FeedLikeUserResponse.builder()
-                .userId(user.getId())
-                .username(user.getUsername())
-                .profileImageUrl(user.getProfileImageUrl())
-                .likedAt(LocalDateTime.now())
+        return projections.stream()
+            .map(proj -> UserSimpleResponse.builder()
+                .id(proj.getId())
+                .username(proj.getUsername())
+                .name(proj.getName())
+                .profileImageUrl(proj.getProfileImageUrl())
+                .role(proj.getRole())
+                .subscriptionStatus(proj.getSubscriptionStatus())
                 .build())
             .toList();
-
-        long total = redisLikeFacade.getLikeCount(feedId);
-        return new PageImpl<>(responses, pageable, total);
     }
 }

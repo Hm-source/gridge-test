@@ -1,16 +1,18 @@
 package org.example.gridgestagram.controller.feed;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.gridgestagram.controller.feed.dto.LikePairProjection;
 import org.example.gridgestagram.repository.feed.FeedLikeRepository;
-import org.example.gridgestagram.repository.feed.FeedRepository;
-import org.example.gridgestagram.repository.feed.entity.Feed;
 import org.example.gridgestagram.repository.feed.entity.FeedLike;
-import org.example.gridgestagram.repository.user.entity.User;
-import org.example.gridgestagram.service.domain.UserService;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -22,73 +24,110 @@ import org.springframework.transaction.annotation.Transactional;
 public class LikeSyncScheduler {
 
     private static final String LIKE_SYNC_QUEUE_KEY = "like:sync:queue";
+    private static final int BATCH_SIZE = 100;
     private final RedisTemplate<String, Object> redisTemplate;
     private final FeedLikeRepository feedLikeRepository;
-    private final FeedRepository feedRepository;
-    private final UserService userService;
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 2000)
     @Transactional
-    public void syncLikesToDatabase() {
-        try {
-            int batchSize = 100;
-            List<Object> syncItems = new ArrayList<>();
-
-            for (int i = 0; i < batchSize; i++) {
-                Object item = redisTemplate.opsForList().rightPop(LIKE_SYNC_QUEUE_KEY);
-                if (item == null) {
-                    break;
-                }
-                syncItems.add(item);
+    public void processSyncQueue() {
+        List<LikeAction> actions = new ArrayList<>();
+        for (int i = 0; i < BATCH_SIZE; i++) {
+            Map<String, Object> item = (Map<String, Object>)
+                redisTemplate.opsForList().rightPop(LIKE_SYNC_QUEUE_KEY);
+            if (item == null) {
+                break;
             }
 
-            if (syncItems.isEmpty()) {
-                return;
-            }
-
-            log.info("좋아요 DB 동기화 시작 - 처리할 항목: {}개", syncItems.size());
-
-            for (Object item : syncItems) {
-                try {
-                    processSyncItem((Map<String, Object>) item);
-                } catch (Exception e) {
-                    log.error("좋아요 동기화 실패: {}", item, e);
-                }
-            }
-
-            log.info("좋아요 DB 동기화 완료 - 처리된 항목: {}개", syncItems.size());
-
-        } catch (Exception e) {
-            log.error("좋아요 동기화 스케줄러 오류", e);
+            actions.add(new LikeAction(
+                Long.valueOf(item.get("feedId").toString()),
+                Long.valueOf(item.get("userId").toString()),
+                item.get("action").toString(),
+                Long.valueOf(item.get("timestamp").toString())
+            ));
         }
-    }
 
-    private void processSyncItem(Map<String, Object> item) {
-        Long feedId = Long.valueOf(item.get("feedId").toString());
-        Long userId = Long.valueOf(item.get("userId").toString());
-        String action = item.get("action").toString();
-
-        Feed feed = feedRepository.findById(feedId).orElse(null);
-        if (feed == null) {
-            log.warn("존재하지 않는 피드 ID: {}", feedId);
+        if (actions.isEmpty()) {
             return;
         }
 
-        User user = userService.findById(userId);
+        Map<String, LikeAction> finalActions = new HashMap<>();
+        for (LikeAction action : actions) {
+            String key = action.feedId + "_" + action.userId;
 
-        if ("ADD".equals(action)) {
-            if (!feedLikeRepository.existsByFeedIdAndUserId(feedId, userId)) {
-                FeedLike feedLike = FeedLike.create(feed, user);
-                feedLikeRepository.save(feedLike);
-
-                feed.increaseLikeCount();
-                feedRepository.save(feed);
+            LikeAction existing = finalActions.get(key);
+            if (existing == null || action.timestamp > existing.timestamp) {
+                finalActions.put(key, action);
             }
-        } else if ("REMOVE".equals(action)) {
-            feedLikeRepository.deleteByFeedIdAndUserId(feedId, userId);
+        }
 
-            feed.decreaseLikeCount();
-            feedRepository.save(feed);
+        log.info("좋아요 동기화: {} 개 액션 → {} 개 최종 액션", actions.size(), finalActions.size());
+
+        List<LikeAction> addActions = new ArrayList<>();
+        List<LikeAction> removeActions = new ArrayList<>();
+
+        for (LikeAction action : finalActions.values()) {
+            if ("ADD".equals(action.action)) {
+                addActions.add(action);
+            } else if ("REMOVE".equals(action.action)) {
+                removeActions.add(action);
+            }
+        }
+
+        if (!addActions.isEmpty()) {
+            processBatchAdd(addActions);
+        }
+        if (!removeActions.isEmpty()) {
+            processBatchRemove(removeActions);
+        }
+    }
+
+    private void processBatchAdd(List<LikeAction> addActions) {
+        List<Long> feedIds = addActions.stream().map(a -> a.feedId).collect(Collectors.toList());
+        List<Long> userIds = addActions.stream().map(a -> a.userId).collect(Collectors.toList());
+
+        List<LikePairProjection> pairs = feedLikeRepository.findExistingPairs(feedIds, userIds);
+        Set<String> existingPairs = Optional.ofNullable(pairs)
+            .orElse(Collections.emptyList())
+            .stream()
+            .map(pair -> pair.getFeedId() + "_" + pair.getUserId())
+            .collect(Collectors.toSet());
+
+        List<FeedLike> newLikes = addActions.stream()
+            .filter(action -> !existingPairs.contains(action.feedId + "_" + action.userId))
+            .map(action -> FeedLike.create(action.feedId, action.userId))
+            .collect(Collectors.toList());
+
+        if (!newLikes.isEmpty()) {
+            try {
+                feedLikeRepository.saveAll(newLikes);
+                log.info("좋아요 {} 개 배치 추가", newLikes.size());
+            } catch (Exception e) {
+                log.error("배치 추가 실패", e);
+            }
+        }
+    }
+
+    private void processBatchRemove(List<LikeAction> removeActions) {
+        List<Long> feedIds = removeActions.stream().map(a -> a.feedId).collect(Collectors.toList());
+        List<Long> userIds = removeActions.stream().map(a -> a.userId).collect(Collectors.toList());
+
+        int deletedCount = feedLikeRepository.batchDeleteByFeedIdsAndUserIds(feedIds, userIds);
+        log.info("좋아요 {} 개 배치 삭제", deletedCount);
+    }
+
+    private static class LikeAction {
+
+        Long feedId;
+        Long userId;
+        String action;
+        Long timestamp;
+
+        LikeAction(Long feedId, Long userId, String action, Long timestamp) {
+            this.feedId = feedId;
+            this.userId = userId;
+            this.action = action;
+            this.timestamp = timestamp;
         }
     }
 

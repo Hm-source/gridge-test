@@ -17,6 +17,7 @@ import org.example.gridgestagram.repository.feed.FeedRepository;
 import org.example.gridgestagram.repository.feed.entity.Comment;
 import org.example.gridgestagram.repository.feed.entity.Feed;
 import org.example.gridgestagram.repository.user.entity.User;
+import org.example.gridgestagram.service.facade.RedisLikeFacade;
 import org.example.gridgestagram.utils.PaginationUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ public class FeedService {
 
     private final FeedRepository feedRepository;
     private final CommentRepository commentRepository;
+    private final RedisLikeFacade redisLikeFacade;
 
     @Transactional(readOnly = true)
     public Page<FeedResponse> getFeeds(Pageable pageable) {
@@ -40,7 +42,6 @@ public class FeedService {
             List<Long> feedIds = feedPage.getContent().stream()
                 .map(Feed::getId)
                 .toList();
-
             Map<Long, List<Comment>> commentsByFeedId = Collections.emptyMap();
             try {
                 if (!feedIds.isEmpty()) {
@@ -54,13 +55,17 @@ public class FeedService {
             }
 
             final Map<Long, List<Comment>> finalCommentsByFeedId = commentsByFeedId;
+            Map<Long, Integer> likeCounts = redisLikeFacade.getLikeCounts(feedIds);
+
             return feedPage.map(feed -> {
                 List<CommentResponse> recentComments = finalCommentsByFeedId
                     .getOrDefault(feed.getId(), Collections.emptyList())
                     .stream()
                     .map(CommentResponse::from)
                     .toList();
-                return FeedResponse.fromWithComments(feed, recentComments);
+                Integer likeCount = likeCounts.getOrDefault(feed.getId(), 0);
+
+                return FeedResponse.fromWithCommentsAndLikes(feed, recentComments, likeCount);
             });
         } catch (Exception e) {
             log.error("게시물 목록 조회 실패: {}", e.getMessage());
@@ -71,8 +76,12 @@ public class FeedService {
     @Transactional(readOnly = true)
     public Feed getFeed(Long feedId) {
         try {
-            return feedRepository.findByIdAndStatusActive(feedId)
+            Feed feed = feedRepository.findByIdAndStatusActive(feedId)
                 .orElseThrow(() -> new CustomException(ErrorCode.FEED_NOT_FOUND));
+            Integer likeCount = redisLikeFacade.getLikeCount(feedId);
+            feed.updateLikeCount(likeCount);
+            return feed;
+
         } catch (CustomException e) {
             throw e;
         } catch (Exception e) {

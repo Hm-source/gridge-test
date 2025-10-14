@@ -1,11 +1,11 @@
 package org.example.gridgestagram.repository.feed;
 
 import java.util.List;
-import java.util.Optional;
+import org.example.gridgestagram.controller.feed.dto.LikePairProjection;
+import org.example.gridgestagram.controller.feed.dto.UserProjection;
 import org.example.gridgestagram.repository.feed.entity.FeedLike;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,20 +13,28 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FeedLikeRepository extends JpaRepository<FeedLike, Long> {
 
-    Optional<FeedLike> findByFeedIdAndUserId(Long feedId, Long userId);
-
-    long countByFeedId(Long feedId);
-
-    Page<FeedLike> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
-
-    Page<FeedLike> findByFeedIdOrderByCreatedAtDesc(Long feedId, Pageable pageable);
-
     boolean existsByFeedIdAndUserId(Long feedId, Long userId);
 
-    void deleteByFeedIdAndUserId(Long feedId, Long userId);
+    @Query(value = """
+        SELECT u.id as id, u.username as username, u.profile_image_url, 
+               u.role as role, u.name as name, u.subscription_status
+        FROM feed_like fl 
+        JOIN users u ON fl.user_id = u.id 
+        WHERE fl.feed_id = :feedId 
+        ORDER BY RAND() 
+        LIMIT :limit
+        """, nativeQuery = true)
+    List<UserProjection> findRandomLikeUsersNative(@Param("feedId") Long feedId,
+        @Param("limit") int limit);
 
-    List<FeedLike> findByFeedId(Long feedId);
+    @Query("SELECT fl.feedId as feedId, fl.userId as userId " +
+        "FROM FeedLike fl WHERE fl.feedId IN :feedIds AND fl.userId IN :userIds")
+    List<LikePairProjection> findExistingPairs(@Param("feedIds") List<Long> feedIds,
+        @Param("userIds") List<Long> userIds);
 
-    @Query("SELECT fl FROM FeedLike fl WHERE fl.feed.id IN :feedIds")
-    List<FeedLike> findByFeedIds(@Param("feedIds") List<Long> feedIds);
+    @Modifying
+    @Query("DELETE FROM FeedLike fl WHERE fl.feedId IN :feedIds AND fl.userId IN :userIds")
+    int batchDeleteByFeedIdsAndUserIds(@Param("feedIds") List<Long> feedIds,
+        @Param("userIds") List<Long> userIds);
+
 }

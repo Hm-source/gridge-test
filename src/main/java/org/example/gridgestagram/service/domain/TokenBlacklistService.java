@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 public class TokenBlacklistService {
 
     private static final String BLACKLIST_ACCESS_TOKEN_PREFIX = "blacklist:access:";
-    private static final String BLACKLIST_REFRESH_TOKEN_PREFIX = "blacklist:refresh:";
     private static final String BLACKLIST_USER_PREFIX = "blacklist:user:";
 
     private final RedisTemplate<String, Object> redisTemplate;

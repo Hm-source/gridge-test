@@ -51,6 +51,7 @@ public enum ErrorCode {
     FEED_HIDE_FAILED("FEED_007", "피드 숨김 처리를 실패하였습니다.", 500),
     ALREADY_LIKED("FEED_008", "이미 좋아요를 누른 피드입니다.", 400),
     LIKE_NOT_FOUND("FEED_009", "좋아요를 찾을 수 없습니다.", 404),
+    LIKE_REDIS_TRANSACTION_FAILED("FEED_010", "Redis 트랜잭션 처리에 실패했습니다.", 500),
 
     // 신고 관련
     CANNOT_REPORT_OWN_FEED("REPORT_001", "본인 피드 또는 댓글은 신고할 수 없습니다.", 400),
@@ -101,7 +102,10 @@ public enum ErrorCode {
     INVALID_REQUEST("COMMON_001", "유효하지 않은 요청입니다.", 400),
     TOKEN_BLACKLISTED("COMMON_002", "차단된 토큰입니다.", 401),
     USER_TOKENS_BLACKLISTED("COMMON_003", "사용자의 모든 토큰이 무효화되었습니다. 다시 로그인해주세요.", 401),
-    INVALID_REFRESH_TOKEN("COMMON_004", "유효하지 않은 리프레시 토큰입니다.", 401);
+    INVALID_REFRESH_TOKEN("COMMON_004", "유효하지 않은 리프레시 토큰입니다.", 401),
+
+    // Rate Limiting
+    TOO_MANY_REQUESTS("RATE_001", "요청이 너무 많습니다. 잠시 후 다시 시도해주세요.", 429);
     private final String code;
     private final String message;
     private final int status;
